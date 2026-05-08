@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ratewise — Portfolio Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #f8fafc;
+    --ground-elevated: #ffffff;
+    --text: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --accent: #0284C7;
+    --accent-light: #e0f2fe;
+    --accent-dark: #0369a1;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+    --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.08);
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--ground);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  section { padding: 64px 0; }
+  section + section { border-top: 1px solid var(--border); }
+  .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--accent); background: var(--accent-light);
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 16px;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;
+  }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); }
+  h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); margin-bottom: 20px; }
+  h3 { font-size: 1.15rem; margin-bottom: 10px; font-family: var(--font-sans); font-weight: 600; }
+  p { color: var(--text-secondary); max-width: 64ch; }
+  p + p { margin-top: 14px; }
+  .lead { font-size: 1.15rem; line-height: 1.65; color: var(--text-secondary); }
+
+  /* Hero */
+  .hero { padding: 80px 0 56px; }
+  .hero__accent {
+    width: 64px; height: 4px; background: var(--accent); border-radius: 2px; margin-bottom: 28px;
+  }
+  .hero__meta {
+    display: flex; gap: 20px; flex-wrap: wrap; margin-top: 28px;
+    font-size: 0.85rem; color: var(--text-muted);
+  }
+  .hero__meta span { display: flex; align-items: center; gap: 6px; }
+  .hero__reframe {
+    margin-top: 36px; padding: 24px; background: var(--ground-elevated);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .hero__reframe-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px;
+  }
+  .hero__reframe-item {
+    padding: 16px; background: var(--ground); border-radius: 8px; border-left: 3px solid var(--accent);
+  }
+  .hero__reframe-item strong { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px; }
+  .hero__reframe-item span { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.45; }
+
+  /* Problem/Solution */
+  .ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
+  @media (max-width: 720px) { .ps-grid { grid-template-columns: 1fr; } }
+  .ps-card {
+    background: var(--ground-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow);
+  }
+  .ps-card h3 { color: var(--accent-dark); }
+  .ps-card ul { margin-top: 14px; padding-left: 18px; }
+  .ps-card li { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 8px; }
+  .quote-box {
+    margin-top: 18px; padding: 14px 16px; background: var(--ground);
+    border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; font-size: 0.85rem;
+    color: var(--text-secondary); font-style: italic;
+  }
+  .quote-box cite { display: block; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); font-style: normal; }
+
+  /* Architecture */
+  .arch-diagram {
+    background: var(--ground-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px; margin-top: 24px; box-shadow: var(--shadow);
+  }
+  .arch-layer {
+    display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px;
+    background: var(--ground); border-radius: 10px; margin-bottom: 12px;
+    border: 1px solid var(--border); transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .arch-layer:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .arch-layer__num {
+    width: 32px; height: 32px; border-radius: 8px; background: var(--accent);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .arch-layer__content h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+  .arch-layer__content p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+  .arch-layer__content .tech { font-size: 0.78rem; color: var(--accent); margin-top: 4px; font-weight: 500; }
+  .arch-arrow { text-align: center; color: var(--accent); font-size: 1.2rem; margin: 4px 0; }
+
+  /* Features */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+  .feature-card {
+    background: var(--ground-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow);
+  }
+  .feature-card .status {
+    display: inline-block; font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 999px; margin-bottom: 10px;
+  }
+  .status--production { background: #dcfce7; color: #166534; }
+  .status--prototype { background: #fef9c3; color: #854d0e; }
+  .status--planned { background: #f1f5f9; color: #475569; }
+  .feature-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+  .feature-card p { font-size: 0.85rem; color: var(--text-secondary); }
+
+  /* Metrics */
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-top: 24px; }
+  .metric-box {
+    background: var(--ground-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; text-align: center; box-shadow: var(--shadow);
+  }
+  .metric-box__value { font-size: 1.6rem; font-weight: 700; color: var(--accent); font-family: var(--font-mono); }
+  .metric-box__label { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .metric-box__ctx { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* Code Exhibit */
+  .code-exhibit { margin-top: 24px; }
+  .code-header {
+    background: #0f172a; color: #94a3b8; padding: 10px 18px; border-radius: var(--radius) var(--radius) 0 0;
+    font-size: 0.8rem; font-family: var(--font-mono); display: flex; justify-content: space-between; align-items: center;
+  }
+  .code-block {
+    background: #0f172a; color: #e2e8f0; padding: 20px 24px 24px;
+    border-radius: 0 0 var(--radius) var(--radius); overflow-x: auto; font-family: var(--font-mono);
+    font-size: 0.82rem; line-height: 1.7;
+  }
+  .code-block .k { color: #c084fc; } /* keyword */
+  .code-block .f { color: #60a5fa; } /* function */
+  .code-block .t { color: #38bdf8; } /* type */
+  .code-block .s { color: #a3e635; } /* string */
+  .code-block .n { color: #f472b6; } /* number */
+  .code-block .c { color: #64748b; } /* comment */
+  .code-context {
+    background: var(--ground-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow);
+  }
+  .code-context p { font-size: 0.9rem; }
+
+  /* Decisions */
+  details { background: var(--ground-elevated); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  summary {
+    padding: 18px 22px; cursor: pointer; font-weight: 600; font-size: 0.95rem;
+    list-style: none; display: flex; justify-content: space-between; align-items: center;
+  }
+  summary::after { content: '+'; font-family: var(--font-mono); color: var(--accent); font-size: 1.1rem; }
+  details[open] summary::after { content: '−'; }
+  summary:hover { background: var(--ground); }
+  .decision-body { padding: 0 22px 22px; }
+  .decision-body p { font-size: 0.9rem; }
+  .impact-tag {
+    display: inline-block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 999px; margin-top: 12px;
+  }
+  .impact-high { background: #fee2e2; color: #991b1b; }
+  .impact-medium { background: #fef3c7; color: #92400e; }
+  .impact-low { background: #e0f2fe; color: #075985; }
+
+  /* Timeline */
+  .timeline { position: relative; margin-top: 24px; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px;
+    width: 2px; background: var(--border);
+  }
+  .timeline-item { position: relative; margin-bottom: 24px; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -24px; top: 6px;
+    width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ground);
+  }
+  .timeline-item.future::before { background: var(--text-muted); }
+  .timeline-item h4 { font-size: 0.95rem; font-weight: 600; }
+  .timeline-item .tl-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+  .timeline-item p { font-size: 0.88rem; }
+
+  /* Footer */
+  footer { background: var(--ground-elevated); border-top: 1px solid var(--border); padding: 40px 0; margin-top: 40px; }
+  .footer__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .footer__tag {
+    font-size: 0.75rem; color: var(--text-secondary); background: var(--ground);
+    border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;
+  }
+  .footer__note { font-size: 0.8rem; color: var(--text-muted); margin-top: 18px; max-width: 60ch; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero reveal">
+  <div class="container">
+    <div class="hero__accent"></div>
+    <div class="tag">Project #8 of 9</div>
+    <h1>Ratewise</h1>
+    <p class="lead" style="margin-top:16px;max-width:56ch;">AI-powered rate intelligence for the creator economy</p>
+    <p style="margin-top:18px;max-width:64ch;">Most creator pricing tools are either opaque black boxes or static spreadsheets that cannot adapt to platform, engagement, or geography. Ratewise builds pricing from first principles with 12 visible multipliers. The result is a defensible price range both creators and brands can trust.</p>
+    <div class="hero__meta">
+      <span>⚡ Next.js 14 + TypeScript</span>
+      <span>🗄️ Supabase PostgreSQL</span>
+      <span>💳 Stripe Subscriptions</span>
+      <span>🤖 OpenAI GPT-4o-mini</span>
+      <span>📐 12-factor pricing engine</span>
+    </div>
+    <div class="hero__reframe">
+      <strong style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);">Thinking-First Reframe</strong>
+      <div class="hero__reframe-grid">
+        <div class="hero__reframe-item"><strong>Signal</strong><span>Creator economy pricing is arbitrary—same follower count, 10x price swings</span></div>
+        <div class="hero__reframe-item"><strong>Filter</strong><span>Deterministic multi-factor algorithm with explainable multipliers, not black-box AI</span></div>
+        <div class="hero__reframe-item"><strong>Payoff</strong><span>Every price comes with a transparent breakdown: engagement boosted 30%, video content premium 20%</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE BET -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">The Bet</div>
+    <h2>Transparent pricing builds more trust than "AI-powered" opacity</h2>
+    <p class="lead">Thesis: creators and brands will prefer auditable math over black-box recommendations when money is on the line.</p>
+    <p><strong>Conviction:</strong> High. Financial decisions require defendable logic. A creator who can explain their rate is more likely to close a deal.</p>
+    <p><strong>Risk if wrong:</strong> Users may prefer the simplicity of a single ChatGPT number over a detailed multiplier breakdown.</p>
+    <p><strong>Hedge:</strong> OpenAI GPT-4o-mini is available as a narrative layer for Pro users—chat-style advice on top of deterministic math.</p>
+  </div>
+</section>
+
+<!-- PROBLEM / SOLUTION -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Problem & Solution</div>
+    <h2>From gut feeling to grounded math</h2>
+    <div class="ps-grid">
+      <div class="ps-card">
+        <h3>Problem</h3>
+        <ul>
+          <li>Same 100k Instagram creator quoted $500 by one brand and $5,000 by another</li>
+          <li>No standard methodology—rates are pulled from thin air or copied from competitors</li>
+          <li>Black-box AI tools generate numbers without showing their work</li>
+          <li>Static rate cards cannot adjust for engagement spikes, platform shifts, or campaign complexity</li>
+        </ul>
+        <div class="quote-box">
+          "RateWise is a comprehensive platform designed to help freelancers and agencies determine optimal pricing for their services. By combining AI-powered analysis with real-time market data scraping"
+          <cite>— README.md</cite>
+        </div>
+      </div>
+      <div class="ps-card">
+        <h3>Solution</h3>
+        <ul>
+          <li>Base rate anchored to follower tier (nano $100 to mega $25,000)</li>
+          <li>Engagement multiplier: 0.7x to 1.5x based on rate vs tier benchmark</li>
+          <li>Content-type multiplier: tweet 0.4x to live 1.5x</li>
+          <li>Deliverable volume discounts: 5+ items 0.9x, 10+ items 0.85x, 20+ bulk 0.9x</li>
+          <li>Industry, geography, duration, usage rights, exclusivity, rush, revision, and platform adjustments</li>
+          <li>AI explanation layer narrates the math for Pro users</li>
+        </ul>
+        <div class="quote-box">
+          calculatePrice composes basePrice × engagementMultiplier × contentTypeMultiplier × deliverableMultiplier × industryMultiplier × geographyMultiplier × durationMultiplier × usageRightsMultiplier × exclusivityMultiplier × rushMultiplier × revisionMultiplier × platformAdjustment
+          <cite>— pricing-calculator.ts L374-476</cite>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Architecture</div>
+    <h2>Four layers, end-to-end type safety</h2>
+    <p>Next.js 14 App Router with API routes, Zod validation at every boundary, and Supabase RLS enforcing row-level security.</p>
+    <div class="arch-diagram">
+      <div class="arch-layer">
+        <div class="arch-layer__num">1</div>
+        <div class="arch-layer__content">
+          <h4>Presentation</h4>
+          <p>Marketing pages, calculator UI, dashboard, rate card preview, pricing page</p>
+          <div class="tech">Next.js 14 App Router · React 18 · Tailwind CSS · shadcn/ui · Framer Motion · Recharts</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer__num">2</div>
+        <div class="arch-layer__content">
+          <h4>Application</h4>
+          <p>Rate calculation endpoint, Stripe webhooks, rate card CRUD, auth callbacks, quota enforcement</p>
+          <div class="tech">Next.js API Routes · Zod · React Hook Form · Sonner toast</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer__num">3</div>
+        <div class="arch-layer__content">
+          <h4>Domain</h4>
+          <p>Deterministic pricing algorithm, AI explanation generation, market data scraping, subscription lifecycle</p>
+          <div class="tech">pricing-calculator.ts · rate-calculator.ts (OpenAI) · market-scraper.ts · stripe/server.ts</div>
+        </div>
+      </div>
+      <div class="arch-arrow">↓</div>
+      <div class="arch-layer">
+        <div class="arch-layer__num">4</div>
+        <div class="arch-layer__content">
+          <h4>Data</h4>
+          <p>User profiles with RLS, calculation history, rate cards, subscription state, webhook events</p>
+          <div class="tech">Supabase PostgreSQL · Supabase Auth · Supabase Storage · Stripe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAKEHOLDER VIEWS -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Stakeholder Views</div>
+    <h2>Three lenses on the same product</h2>
+    <div class="ps-grid" style="margin-top:20px;">
+      <div class="ps-card">
+        <h3>Creator</h3>
+        <p>"I can generate a professional rate card in minutes, see exactly why my rate is what it is, and share a branded PDF with clients. The free tier gives me 5 calculations per month—enough to test before committing."</p>
+      </div>
+      <div class="ps-card">
+        <h3>Brand</h3>
+        <p>"I get transparent pricing with visible multipliers. No more guessing if a creator rate is fair—I can see the engagement premium, content-type premium, and geography adjustment."</p>
+      </div>
+      <div class="ps-card" style="grid-column:1 / -1;">
+        <h3>Engineer</h3>
+        <p>"The pricing engine is pure TypeScript with no ML dependencies—easy to audit, modify, and extend. The Zod schemas enforce type safety from API to database. Stripe webhooks handle the full subscription lifecycle."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Features</div>
+    <h2>What ships today</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>Smart Rate Calculator</h4>
+        <p>12-factor deterministic pricing with transparent multiplier breakdown</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>Rate Cards</h4>
+        <p>Branded, shareable rate cards with service grouping, market comparison badges, and PDF export</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>AI Explanation</h4>
+        <p>GPT-4o-mini narrates the pricing breakdown with personalized insights and recommendations</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>Stripe Subscriptions</h4>
+        <p>Free / Pro / Enterprise tiers with checkout, portal, and webhook sync</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>Calculation History</h4>
+        <p>Saved calculations with filtering, sorting, and pagination</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>Multi-Currency</h4>
+        <p>USD, EUR, GBP, CAD, AUD with fixed exchange rates</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--production">Production</span>
+        <h4>Quota Enforcement</h4>
+        <p>Free tier limited to 5 calculations/month with monthly reset</p>
+      </div>
+      <div class="feature-card">
+        <span class="status status--prototype">Prototype</span>
+        <h4>Market Data Scraping</h4>
+        <p>Puppeteer scaffolding exists but returns mock data; Upwork/Fiverr scraping is TODO</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERFORMANCE -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Performance & Scale</div>
+    <h2>By the numbers</h2>
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="metric-box__value">105+</div>
+        <div class="metric-box__label">Source files</div>
+        <div class="metric-box__ctx">TypeScript/React in src/</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box__value">5</div>
+        <div class="metric-box__label">Database tables</div>
+        <div class="metric-box__ctx">With RLS policies</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box__value">15+</div>
+        <div class="metric-box__label">Zod schemas</div>
+        <div class="metric-box__ctx">End-to-end validation</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box__value">5</div>
+        <div class="metric-box__label">Stripe events</div>
+        <div class="metric-box__ctx">Webhook handlers</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box__value">12</div>
+        <div class="metric-box__label">Pricing multipliers</div>
+        <div class="metric-box__ctx">Deterministic factors</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box__value">8</div>
+        <div class="metric-box__label">Platforms</div>
+        <div class="metric-box__ctx">Instagram to Snapchat</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box__value">5</div>
+        <div class="metric-box__label">Currencies</div>
+        <div class="metric-box__ctx">USD, EUR, GBP, CAD, AUD</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CODE EXHIBIT -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Engineering Proof</div>
+    <h2>Deterministic Pricing Engine vs Black-Box AI</h2>
+    <div class="code-context">
+      <p>The project ships both a deterministic algorithm and an OpenAI fallback. The decision to build the algorithm was intentional: <strong>financial decisions require auditable math, not opaque LLM outputs.</strong> The function below composes 12 multipliers into a single transparent price. Every factor is inspectable, testable, and explainable.</p>
+    </div>
+    <div class="code-exhibit">
+      <div class="code-header">
+        <span>src/lib/utils/pricing-calculator.ts</span>
+        <span style="font-size:0.75rem;">Lines 374–476</span>
+      </div>
+      <pre class="code-block"><code><span class="k">export function</span> <span class="f">calculatePrice</span>(<span class="t">options</span>: <span class="t">CalculatePriceOptions</span>): <span class="t">PricingBreakdown</span> {
+  <span class="k">const</span> { <span class="t">platform</span>, <span class="t">followers</span>, <span class="t">contentType</span>, <span class="t">deliverables</span>, <span class="t">engagementRate</span>,
+    <span class="t">industry</span>, <span class="t">geography</span>, <span class="t">campaignDuration</span>, <span class="t">usageRights</span>, <span class="t">exclusivity</span>,
+    <span class="t">rushJob</span>, <span class="t">revisions</span>, <span class="t">currency</span> = <span class="s">'USD'</span> } = <span class="t">options</span>;
+
+  <span class="k">const</span> <span class="t">tier</span> = <span class="f">getTier</span>(<span class="t">followers</span>);
+  <span class="k">const</span> <span class="t">basePrice</span> = <span class="t">BASE_RATES</span>[<span class="t">tier</span>];
+
+  <span class="k">const</span> <span class="t">effectiveEngagementRate</span> = <span class="t">engagementRate</span> ?? <span class="f">estimateEngagement</span>(<span class="t">followers</span>);
+  <span class="k">const</span> <span class="t">engagementMultiplier</span> = <span class="f">getEngagementMultiplier</span>(<span class="t">effectiveEngagementRate</span>, <span class="t">followers</span>);
+  <span class="k">const</span> <span class="t">contentTypeMultiplier</span> = <span class="t">CONTENT_TYPE_MULTIPLIERS</span>[<span class="t">contentType</span>] || <span class="n">1.0</span>;
+  <span class="k">const</span> <span class="t">deliverableMultiplier</span> = <span class="f">getDeliverableMultiplier</span>(
+    <span class="t">deliverables</span>.<span class="f">map</span>(<span class="t">d</span> => ({ <span class="t">type</span>: <span class="t">d.type</span>, <span class="t">quantity</span>: <span class="t">d.quantity</span> }))
+  );
+  <span class="k">const</span> <span class="t">industryMultiplier</span>      = <span class="f">getIndustryMultiplier</span>(<span class="t">industry</span>);
+  <span class="k">const</span> <span class="t">geographyMultiplier</span>     = <span class="f">getGeographyMultiplier</span>(<span class="t">geography</span>);
+  <span class="k">const</span> <span class="t">durationMultiplier</span>      = <span class="f">getDurationMultiplier</span>(<span class="t">campaignDuration</span>);
+  <span class="k">const</span> <span class="t">usageRightsMultiplier</span>   = <span class="f">getUsageRightsMultiplier</span>(<span class="t">usageRights</span>);
+  <span class="k">const</span> <span class="t">exclusivityMultiplier</span>   = <span class="f">getExclusivityMultiplier</span>(<span class="t">exclusivity</span>);
+  <span class="k">const</span> <span class="t">rushMultiplier</span>          = <span class="f">getRushMultiplier</span>(<span class="t">rushJob</span>);
+  <span class="k">const</span> <span class="t">revisionMultiplier</span>      = <span class="f">getRevisionMultiplier</span>(<span class="t">revisions</span>);
+  <span class="k">const</span> <span class="t">platformAdjustment</span>      = <span class="t">PLATFORM_MULTIPLIERS</span>[<span class="t">platform</span>] || <span class="n">1.0</span>;
+
+  <span class="k">const</span> <span class="t">subtotal</span> = <span class="t">basePrice</span> *
+    <span class="t">engagementMultiplier</span> * <span class="t">contentTypeMultiplier</span> * <span class="t">deliverableMultiplier</span> *
+    <span class="t">industryMultiplier</span> * <span class="t">geographyMultiplier</span> * <span class="t">durationMultiplier</span> *
+    <span class="t">usageRightsMultiplier</span> * <span class="t">exclusivityMultiplier</span> * <span class="t">rushMultiplier</span> *
+    <span class="t">revisionMultiplier</span> * <span class="t">platformAdjustment</span>;
+
+  <span class="k">const</span> <span class="t">finalPrice</span> = <span class="t">Math</span>.<span class="f">round</span>(<span class="t">subtotal</span> / <span class="n">10</span>) * <span class="n">10</span>;
+  <span class="k">const</span> <span class="t">priceRange</span> = {
+    <span class="t">min</span>: <span class="t">Math</span>.<span class="f">round</span>(<span class="t">finalPrice</span> * <span class="n">0.85</span> / <span class="n">10</span>) * <span class="n">10</span>,
+    <span class="t">max</span>: <span class="t">Math</span>.<span class="f">round</span>(<span class="t">finalPrice</span> * <span class="n">1.15</span> / <span class="n">10</span>) * <span class="n">10</span>,
+  };
+
+  <span class="k">return</span> { <span class="t">basePrice</span>, <span class="t">engagementMultiplier</span>, <span class="t">contentTypeMultiplier</span>,
+    <span class="t">deliverableMultiplier</span>, <span class="t">industryMultiplier</span>, <span class="t">geographyMultiplier</span>,
+    <span class="t">durationMultiplier</span>, <span class="t">usageRightsMultiplier</span>, <span class="t">exclusivityMultiplier</span>,
+    <span class="t">rushMultiplier</span>, <span class="t">revisionMultiplier</span>, <span class="t">platformAdjustment</span>, <span class="t">subtotal</span>,
+    <span class="t">finalPrice</span>, <span class="t">priceRange</span>, <span class="t">currency</span>, <span class="t">tier</span>,
+    <span class="t">estimatedEngagement</span>: <span class="t">effectiveEngagementRate</span> };
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- DECISIONS -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Strategic Decisions</div>
+    <h2>Five decisions that shaped the build</h2>
+
+    <details>
+      <summary>Why a deterministic algorithm instead of just using OpenAI?</summary>
+      <div class="decision-body">
+        <p>Financial decisions require auditable math. The deterministic engine shows exactly how each factor contributes to the final price. OpenAI is used only for narrative explanation—never for the actual calculation. This creates trust: creators can defend their rates, and brands can verify fairness.</p>
+        <span class="impact-tag impact-high">High Impact</span>
+      </div>
+    </details>
+
+    <details>
+      <summary>Why influencer pricing instead of freelance developer pricing?</summary>
+      <div class="decision-body">
+        <p>The README positions Ratewise as a freelance rate calculator, but the actual pricing engine and schemas are built for social media creators (platforms, followers, engagement, content types). The OpenAI layer handles freelance rates as a secondary use case. The creator economy has more standardized variables (followers, engagement, platform) making it better suited for algorithmic pricing.</p>
+        <span class="impact-tag impact-high">High Impact</span>
+      </div>
+    </details>
+
+    <details>
+      <summary>Why Supabase Auth over Clerk (which the API route imports)?</summary>
+      <div class="decision-body">
+        <p>The project uses Supabase Auth throughout—middleware, schema, and client. However, app/api/calculate/route.ts imports @clerk/nextjs/server, which is not in package.json. This appears to be leftover code from an earlier auth approach. The working auth flow is Supabase.</p>
+        <span class="impact-tag impact-medium">Medium Impact</span>
+      </div>
+    </details>
+
+    <details>
+      <summary>Why fixed exchange rates instead of a live API?</summary>
+      <div class="decision-body">
+        <p>The currency conversion uses hardcoded rates (USD 1.0, EUR 0.92, GBP 0.79, CAD 1.36, AUD 1.52). For a pricing tool, approximate conversion is acceptable—creators typically quote in their primary currency. A live API would add cost and latency for marginal accuracy gain.</p>
+        <span class="impact-tag impact-low">Low Impact</span>
+      </div>
+    </details>
+
+    <details>
+      <summary>Why watermark free users' rate cards?</summary>
+      <div class="decision-body">
+        <p>The rate card preview component shows a watermark for non-paid users. This is a classic freemium conversion mechanic—users can see the full quality of the output but need to upgrade to remove branding.</p>
+        <span class="impact-tag impact-medium">Medium Impact</span>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Timeline</div>
+    <h2>From scaffold to monetization</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="tl-meta">v0.1.0 — Shipped</div>
+        <h4>Foundation</h4>
+        <p>Next.js 14 scaffold, Supabase schema with RLS, shadcn/ui component library, Tailwind theme with custom ratewise color palette</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-meta">v0.2.0 — Shipped</div>
+        <h4>Pricing Engine</h4>
+        <p>12-factor deterministic calculator, Zod validation schemas, currency conversion, rate card generation</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-meta">v0.3.0 — Shipped</div>
+        <h4>Monetization</h4>
+        <p>Stripe checkout, customer portal, webhook handlers, subscription tiers (Free/Pro/Enterprise), quota enforcement</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-meta">v0.4.0 — Shipped</div>
+        <h4>AI Layer</h4>
+        <p>GPT-4o-mini explanation generation, insights, recommendations, market context narration</p>
+      </div>
+      <div class="timeline-item future">
+        <div class="tl-meta">v0.5.0 — Planned</div>
+        <h4>Market Intelligence</h4>
+        <p>Live scraping from Upwork/Fiverr, historical trend analysis, demand forecasting</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REFLECTION -->
+<section class="reveal">
+  <div class="container">
+    <div class="tag">Reflection</div>
+    <h2>What worked, what I would change, what I learned</h2>
+    <div class="ps-grid" style="margin-top:20px;">
+      <div class="ps-card">
+        <h3>What worked</h3>
+        <ul>
+          <li>The deterministic pricing engine is the strongest feature—transparent, fast, and entirely client-computable if needed</li>
+          <li>Stripe integration is production-grade with comprehensive webhook handling and subscription state sync</li>
+          <li>Database schema is well-designed with RLS, indexes, triggers, and proper normalization</li>
+          <li>Zod schemas provide end-to-end type safety from API to database</li>
+        </ul>
+      </div>
+      <div class="ps-card">
+        <h3>What I would change</h3>
+        <ul>
+          <li>Fix the frontend/API mismatch: the RateCalculator React component collects freelance data but sends to /api/calculate which expects influencer data</li>
+          <li>Add actual test files—the project has Jest and Playwright dependencies but zero tests</li>
+          <li>Complete the market scraper or remove Puppeteer dependency until it is implemented</li>
+          <li>Remove the @clerk/nextjs import from the calculate API route (dependency not in package.json)</li>
+          <li>Write the documentation files referenced in README</li>
+        </ul>
+      </div>
+      <div class="ps-card" style="grid-column:1 / -1;">
+        <h3>Lessons</h3>
+        <ul>
+          <li>A deterministic algorithm paired with an AI narrator is more trustworthy than AI alone for financial decisions</li>
+          <li>Freemium conversion mechanics (watermarks, calculation quotas) need to be visible early in the user journey</li>
+          <li>README promises should match code reality—claiming Jest tests and live scraping when neither exists damages credibility</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p style="font-size:0.85rem;color:var(--text-muted);">Ratewise · Next.js 14 · TypeScript · Tailwind CSS · shadcn/ui · Supabase · Stripe · OpenAI · Zod · Framer Motion</p>
+    <div class="footer__tags">
+      <span class="footer__tag">Next.js</span>
+      <span class="footer__tag">TypeScript</span>
+      <span class="footer__tag">Tailwind CSS</span>
+      <span class="footer__tag">shadcn/ui</span>
+      <span class="footer__tag">Supabase</span>
+      <span class="footer__tag">Stripe</span>
+      <span class="footer__tag">OpenAI</span>
+      <span class="footer__tag">Zod</span>
+      <span class="footer__tag">Framer Motion</span>
+    </div>
+    <p class="footer__note">Core application: src/ directory (105+ files). Supabase migrations: 3 SQL files. Third-party skill packs in .skills/ and .claude/ excluded as not part of app. Manifest generated 2026-05-08.</p>
+  </div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
