@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RateWise — AI-Powered Rate Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #0f172a;
+      --muted: #64748b;
+      --card: #ffffff;
+      --card-foreground: #0f172a;
+      --border: #e2e8f0;
+      --input: #e2e8f0;
+      --primary: #3b82f6;
+      --primary-foreground: #ffffff;
+      --primary-hover: #2563eb;
+      --ring: #3b82f6;
+      --radius: 0.5rem;
+      --accent: #f1f5f9;
+      --accent-foreground: #0f172a;
+      --destructive: #ef4444;
+      --success: #22c55e;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --fg: #f8fafc;
+      --muted: #94a3b8;
+      --card: #1e293b;
+      --card-foreground: #f8fafc;
+      --border: #334155;
+      --input: #334155;
+      --primary: #60a5fa;
+      --primary-foreground: #0f172a;
+      --primary-hover: #3b82f6;
+      --ring: #60a5fa;
+      --accent: #1e293b;
+      --accent-foreground: #f8fafc;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background .25s ease, color .25s ease;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+    input, select { font-family: inherit; color: inherit; }
+
+    /* Layout */
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+    .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 0 1.25rem; }
+    .page { flex: 1; padding: 1.5rem 0 3rem; opacity: 0; transform: translateY(8px); animation: fadeIn .35s ease forwards; }
+    @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+    /* Navbar */
+    .navbar {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      transition: background .25s ease;
+    }
+    [data-theme="dark"] .navbar { background: rgba(15,23,42,0.85); }
+    .navbar-inner { display: flex; align-items: center; justify-content: space-between; height: 3.5rem; }
+    .logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.125rem; letter-spacing: -0.02em; }
+    .logo-dot { width: 1.5rem; height: 1.5rem; border-radius: var(--radius); background: var(--primary); display: grid; place-items: center; color: var(--primary-foreground); font-size: 0.75rem; }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-link {
+      padding: 0.375rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; color: var(--muted);
+      transition: background .15s, color .15s;
+    }
+    .nav-link:hover { background: var(--accent); color: var(--fg); }
+    .nav-link.active { background: var(--accent); color: var(--fg); }
+    .nav-mobile { display: none; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.5rem 1rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500;
+      transition: background .15s, box-shadow .15s, transform .05s; white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: var(--primary-foreground); box-shadow: var(--shadow); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { border: 1px solid var(--border); background: var(--card); color: var(--fg); }
+    .btn-outline:hover { background: var(--accent); }
+    .btn-outline.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary); }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-ghost:hover { background: var(--accent); color: var(--fg); }
+    .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
+    .btn-sm { padding: 0.25rem 0.625rem; font-size: 0.8125rem; }
+    .btn-full { width: 100%; }
+
+    /* Cards */
+    .card {
+      background: var(--card); color: var(--card-foreground);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); transition: background .25s, border-color .25s;
+    }
+    .card-header { padding: 1.25rem 1.5rem 0; }
+    .card-title { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
+    .card-description { font-size: 0.875rem; color: var(--muted); margin-top: 0.25rem; }
+    .card-body { padding: 1.25rem 1.5rem; }
+    .card-footer { padding: 0 1.5rem 1.25rem; display: flex; gap: 0.5rem; }
+
+    /* Forms */
+    .form-group { margin-bottom: 1.25rem; }
+    .form-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; }
+    .form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+    .input, .select {
+      width: 100%; padding: 0.5rem 0.75rem; border-radius: var(--radius);
+      border: 1px solid var(--input); background: var(--bg); font-size: 0.875rem;
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .input:focus, .select:focus { border-color: var(--ring); box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 20%, transparent); }
+    .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.625rem center; padding-right: 2rem; }
+    [data-theme="dark"] .select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+
+    /* Range / slider companion */
+    .range-row { display: flex; align-items: center; gap: 0.75rem; }
+    .range-input { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--accent); outline: none; }
+    .range-input::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; border: 2px solid var(--bg); box-shadow: var(--shadow); }
+    .range-input::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--primary); cursor: pointer; border: 2px solid var(--bg); box-shadow: var(--shadow); }
+    .range-number { width: 7rem; text-align: right; }
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize; }
+    .badge-blue { background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); }
+    .badge-green { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-purple { background: rgba(168,85,247,0.12); color: #a855f7; }
+    .badge-orange { background: rgba(249,115,22,0.12); color: #f97316; }
+    .badge-red { background: rgba(239,68,68,0.12); color: #ef4444; }
+    [data-theme="dark"] .badge-green { color: #4ade80; }
+    [data-theme="dark"] .badge-purple { color: #c084fc; }
+    [data-theme="dark"] .badge-orange { color: #fb923c; }
+    [data-theme="dark"] .badge-red { color: #f87171; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { font-weight: 600; font-size: 0.8125rem; color: var(--muted); background: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--accent); }
+
+    /* Progress */
+    .progress { height: 0.5rem; border-radius: 9999px; background: var(--accent); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 9999px; background: var(--primary); transition: width .4s ease; }
+
+    /* Toggle switch */
+    .switch { position: relative; display: inline-block; width: 2.5rem; height: 1.375rem; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: var(--input); border-radius: 9999px; transition: .2s; }
+    .slider:before { position: absolute; content: ""; height: 1.125rem; width: 1.125rem; left: 2px; bottom: 2px; background: white; border-radius: 50%; transition: .2s; box-shadow: var(--shadow); }
+    input:checked + .slider { background: var(--primary); }
+    input:checked + .slider:before { transform: translateX(1.125rem); }
+
+    /* Utilities */
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .text-muted { color: var(--muted); }
+    .text-primary { color: var(--primary); }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+    .text-5xl { font-size: 3rem; line-height: 1; }
+    .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mt-8 { margin-top: 2rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-6 { gap: 1.5rem; }
+    .grid { display: grid; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .w-full { width: 100%; }
+    .max-w-md { max-width: 28rem; }
+    .max-w-2xl { max-width: 42rem; }
+    .max-w-3xl { max-width: 48rem; }
+    .max-w-4xl { max-width: 56rem; }
+    .hidden { display: none; }
+    .block { display: block; }
+    .rounded { border-radius: var(--radius); }
+    .border { border: 1px solid var(--border); }
+    .p-4 { padding: 1rem; }
+    .p-6 { padding: 1.5rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .space-y-1 > * + * { margin-top: 0.25rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .space-y-3 > * + * { margin-top: 0.75rem; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .overflow-hidden { overflow: hidden; }
+    .leading-tight { line-height: 1.25; }
+    .tracking-tight { letter-spacing: -0.02em; }
+    .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+    /* Pricing cards */
+    .pricing-card { position: relative; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); transition: transform .15s, box-shadow .15s; }
+    .pricing-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .pricing-card.featured { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+    .pricing-featured-label { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); color: var(--primary-foreground); font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.75rem; border-radius: 9999px; }
+
+    /* Mobile bottom nav */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.92); backdrop-filter: blur(10px); border-top: 1px solid var(--border); justify-content: space-around; padding: 0.375rem 0; }
+      [data-theme="dark"] .nav-mobile { background: rgba(15,23,42,0.92); }
+      .nav-mobile-btn { display: flex; flex-direction: column; align-items: center; gap: 0.125rem; padding: 0.25rem 0.5rem; font-size: 0.625rem; color: var(--muted); border-radius: var(--radius); }
+      .nav-mobile-btn.active { color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); }
+      .nav-mobile-btn svg { width: 1.25rem; height: 1.25rem; }
+      .page { padding-bottom: 5rem; }
+    }
+
+    @media (min-width: 640px) {
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .md\:flex-row { flex-direction: row; }
+      .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    /* Result reveal */
+    .result-enter { animation: slideUp .4s ease forwards; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Tooltip-ish breakdown row */
+    .breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px dashed var(--border); font-size: 0.875rem; }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-label { color: var(--muted); }
+    .breakdown-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="navbar">
+      <div class="container navbar-inner">
+        <a href="#/calculator" class="logo" onclick="navigate('calculator')">
+          <span class="logo-dot">R</span>
+          RateWise
+        </a>
+        <div class="nav-links" id="desktop-nav">
+          <a class="nav-link" href="#/calculator" data-page="calculator" onclick="navigate('calculator')">Calculator</a>
+          <a class="nav-link" href="#/dashboard" data-page="dashboard" onclick="navigate('dashboard')">Dashboard</a>
+          <a class="nav-link" href="#/settings" data-page="settings" onclick="navigate('settings')">Settings</a>
+          <a class="nav-link" href="#/upgrade" data-page="upgrade" onclick="navigate('upgrade')">Upgrade</a>
+          <span id="auth-nav-links">
+            <a class="nav-link" href="#/login" data-page="login" onclick="navigate('login')">Login</a>
+          </span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container page" id="page-root"></div>
+
+    <nav class="nav-mobile" id="mobile-nav">
+      <a class="nav-mobile-btn" data-page="calculator" href="#/calculator" onclick="navigate('calculator')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+        Calc
+      </a>
+      <a class="nav-mobile-btn" data-page="dashboard" href="#/dashboard" onclick="navigate('dashboard')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-mobile-btn" data-page="settings" href="#/settings" onclick="navigate('settings')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        Settings
+      </a>
+      <a class="nav-mobile-btn" data-page="upgrade" href="#/upgrade" onclick="navigate('upgrade')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+        Upgrade
+      </a>
+      <a class="nav-mobile-btn" id="mobile-auth-btn" data-page="login" href="#/login" onclick="navigate('login')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Login
+      </a>
+    </nav>
+  </div>
+
+  <script>
+    /* =========================
+       STATE & STORAGE
+       ========================= */
+    const STORAGE_KEYS = {
+      theme: 'rw_theme',
+      user: 'rw_user',
+      calculations: 'rw_calculations',
+      settings: 'rw_settings'
+    };
+
+    function load(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
+    function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+    let state = {
+      theme: load(STORAGE_KEYS.theme, 'light'),
+      user: load(STORAGE_KEYS.user, null),
+      calculations: load(STORAGE_KEYS.calculations, []),
+      settings: load(STORAGE_KEYS.settings, { notifications: true, marketing: false })
+    };
+
+    /* =========================
+       THEME
+       ========================= */
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      if (theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      } else {
+        root.setAttribute('data-theme', theme);
+      }
+    }
+    applyTheme(state.theme);
+
+    /* =========================
+       ROUTER
+       ========================= */
+    const routes = ['calculator','dashboard','login','settings','upgrade'];
+    let currentPage = 'calculator';
+
+    function navigate(page, push = true) {
+      if (!routes.includes(page)) page = 'calculator';
+      if (page === 'dashboard' && !state.user) { page = 'login'; }
+      currentPage = page;
+      if (push) history.pushState(null, '', `#/${page}`);
+      render();
+      updateNav();
+      window.scrollTo(0,0);
+    }
+
+    function updateNav() {
+      document.querySelectorAll('.nav-link, .nav-mobile-btn').forEach(el => {
+        const p = el.dataset.page;
+        if (p === currentPage) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+      // Auth-specific nav labels
+      const authWrap = document.getElementById('auth-nav-links');
+      const mobileAuth = document.getElementById('mobile-auth-btn');
+      if (state.user) {
+        if (authWrap) authWrap.innerHTML = `<a class="nav-link" href="#/login" onclick="logout()">Logout</a>`;
+        if (mobileAuth) { mobileAuth.textContent = 'Logout'; mobileAuth.setAttribute('onclick','logout()'); mobileAuth.href='#/login'; mobileAuth.dataset.page='login'; }
+      } else {
+        if (authWrap) authWrap.innerHTML = `<a class="nav-link" href="#/login" data-page="login" onclick="navigate('login')">Login</a>`;
+        if (mobileAuth) { mobileAuth.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Login`; mobileAuth.setAttribute('onclick',"navigate('login')"); mobileAuth.href='#/login'; mobileAuth.dataset.page='login'; }
+      }
+    }
+
+    window.addEventListener('popstate', () => {
+      const hash = location.hash.replace('#/','').replace('#','') || 'calculator';
+      navigate(hash, false);
+    });
+
+    /* =========================
+       AUTH
+       ========================= */
+    function loginDemo() {
+      state.user = { email: 'demo@ratewise.app', name: 'Demo User', plan: 'Pro' };
+      save(STORAGE_KEYS.user, state.user);
+      navigate('dashboard');
+    }
+    function logout() {
+      state.user = null;
+      save(STORAGE_KEYS.user, null);
+      navigate('login');
+    }
+
+    /* =========================
+       CALCULATOR LOGIC (EXACT)
+       ========================= */
+    function calculateRate(data) {
+      const baseRate = Math.sqrt(data.followers) * 10;
+
+      const platformMultipliers = {
+        instagram: 1.2, tiktok: 1.3, youtube: 1.4, twitter: 0.9, linkedin: 1.1
+      };
+
+      const contentTypeMultipliers = {
+        post: 1.0, carousel: 1.15, reel: 1.25, story: 0.8, "long-video": 1.5, live: 1.35
+      };
+
+      const nicheMultipliers = {
+        fashion: 1.2, tech: 1.3, fitness: 1.15, food: 1.1, travel: 1.15,
+        gaming: 1.05, finance: 1.4, lifestyle: 1.0, education: 1.1, entertainment: 1.05
+      };
+
+      const usageRightsMultipliers = {
+        "30-days": 1.0, "90-days": 1.15, "1-year": 1.3, perpetual: 1.5
+      };
+
+      const exclusivityMultipliers = {
+        none: 1.0, brand: 1.2, category: 1.4, full: 1.8
+      };
+
+      const engagementMultiplier = 1 + (data.engagement / 10);
+      const platformMultiplier = platformMultipliers[data.platform] || 1.0;
+      const contentMultiplier = contentTypeMultipliers[data.contentType] || 1.0;
+      const nicheMultiplier = nicheMultipliers[data.niche] || 1.0;
+      const usageMultiplier = usageRightsMultipliers[data.usageRights] || 1.0;
+      const exclusivityMultiplier = exclusivityMultipliers[data.exclusivity] || 1.0;
+
+      const totalMultiplier = platformMultiplier * engagementMultiplier * contentMultiplier * nicheMultiplier * usageMultiplier * exclusivityMultiplier;
+      const estimatedRate = Math.round(baseRate * totalMultiplier);
+
+      let tier = "nano";
+      if (data.followers >= 1000000) tier = "mega";
+      else if (data.followers >= 100000) tier = "macro";
+      else if (data.followers >= 50000) tier = "mid";
+      else if (data.followers >= 10000) tier = "micro";
+
+      return {
+        estimatedRate,
+        rateRange: { min: Math.round(estimatedRate * 0.8), max: Math.round(estimatedRate * 1.2) },
+        tier,
+        breakdown: {
+          baseRate: Math.round(baseRate),
+          platformMultiplier, engagementMultiplier, contentTypeMultiplier: contentMultiplier,
+          nicheMultiplier, usageRightsMultiplier: usageMultiplier, exclusivityMultiplier
+        }
+      };
+    }
+
+    /* =========================
+       DEMO DATA
+       ========================= */
+    const sampleCalculations = [
+      { date: '2026-05-08', platform: 'instagram', followers: 125000, engagement: 4.2, contentType: 'reel', niche: 'fashion', usageRights: '90-days', exclusivity: 'brand', estimatedRate: 10913 },
+      { date: '2026-05-07', platform: 'youtube', followers: 450000, engagement: 6.5, contentType: 'long-video', niche: 'tech', usageRights: '1-year', exclusivity: 'category', estimatedRate: 108788 },
+      { date: '2026-05-06', platform: 'tiktok', followers: 28000, engagement: 8.1, contentType: 'carousel', niche: 'fitness', usageRights: '30-days', exclusivity: 'none', estimatedRate: 3685 },
+      { date: '2026-05-05', platform: 'twitter', followers: 5200, engagement: 3.4, contentType: 'post', niche: 'finance', usageRights: 'perpetual', exclusivity: 'full', estimatedRate: 2235 },
+      { date: '2026-05-04', platform: 'linkedin', followers: 18000, engagement: 5.2, contentType: 'story', niche: 'education', usageRights: '30-days', exclusivity: 'none', estimatedRate: 1960 },
+    ];
+
+    function formatFollowers(n) {
+      if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+      if (n >= 1000) return (n/1000).toFixed(n%1000===0?0:1)+'K';
+      return n.toString();
+    }
+    function formatDate(d) { return new Date(d).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }); }
+    function currency(n) { return '$'+n.toLocaleString(); }
+
+    /* =========================
+       PAGE RENDERERS
+       ========================= */
+    const root = document.getElementById('page-root');
+
+    function render() {
+      switch(currentPage) {
+        case 'calculator': renderCalculator(); break;
+        case 'dashboard': renderDashboard(); break;
+        case 'login': renderLogin(); break;
+        case 'settings': renderSettings(); break;
+        case 'upgrade': renderUpgrade(); break;
+        default: renderCalculator();
+      }
+    }
+
+    function renderCalculator() {
+      root.innerHTML = `
+        <div class="max-w-3xl mx-auto">
+          <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded mb-4" style="background:color-mix(in srgb,var(--primary) 12%,transparent);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight">RateWise</h1>
+            <p class="text-muted mt-1">AI-Powered Rate Calculator for Creators</p>
+          </div>
+
+          <div class="card">
+            <div class="card-body space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Platform</label>
+                  <select class="select" id="calc-platform">
+                    <option value="instagram">Instagram</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="twitter">Twitter / X</option>
+                    <option value="linkedin">LinkedIn</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Content Type</label>
+                  <select class="select" id="calc-content">
+                    <option value="post">Single Post</option>
+                    <option value="carousel">Carousel / Multi-image</option>
+                    <option value="reel">Reel / Short Video</option>
+                    <option value="story">Story</option>
+                    <option value="long-video">Long-form Video</option>
+                    <option value="live">Live Stream</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Followers</label>
+                <div class="range-row">
+                  <input type="range" class="range-input" id="calc-followers-range" min="1000" max="10000000" step="1000" value="50000" oninput="syncFollowers(this.value)">
+                  <input type="number" class="input range-number" id="calc-followers" min="1000" max="10000000" value="50000" oninput="syncFollowers(this.value)">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Engagement Rate (%)</label>
+                <div class="range-row">
+                  <input type="range" class="range-input" id="calc-engagement-range" min="0.5" max="20" step="0.1" value="3.5" oninput="syncEngagement(this.value)">
+                  <input type="number" class="input range-number" id="calc-engagement" min="0.5" max="20" step="0.1" value="3.5" oninput="syncEngagement(this.value)">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Niche</label>
+                  <select class="select" id="calc-niche">
+                    <option value="fashion">Fashion & Beauty</option>
+                    <option value="tech">Technology</option>
+                    <option value="fitness">Fitness & Health</option>
+                    <option value="food">Food & Cooking</option>
+                    <option value="travel">Travel</option>
+                    <option value="gaming">Gaming</option>
+                    <option value="finance">Finance</option>
+                    <option value="lifestyle">Lifestyle</option>
+                    <option value="education">Education</option>
+                    <option value="entertainment">Entertainment</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Usage Rights</label>
+                  <select class="select" id="calc-usage">
+                    <option value="30-days">30 Days</option>
+                    <option value="90-days">90 Days</option>
+                    <option value="1-year">1 Year</option>
+                    <option value="perpetual">Perpetual</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Exclusivity</label>
+                <select class="select" id="calc-exclusivity">
+                  <option value="none">None</option>
+                  <option value="brand">Brand Exclusive</option>
+                  <option value="category">Category Exclusive</option>
+                  <option value="full">Full Exclusive</option>
+                </select>
+              </div>
+
+              <button class="btn btn-primary btn-lg btn-full mt-4" onclick="runCalculation()">Calculate Rate</button>
+
+              <div id="calc-result" class="hidden mt-6"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function syncFollowers(v) {
+      const val = Math.min(10000000, Math.max(1000, Number(v)||0));
+      const r = document.getElementById('calc-followers-range');
+      const n = document.getElementById('calc-followers');
+      if (r) r.value = val; if (n) n.value = val;
+    }
+    function syncEngagement(v) {
+      const val = Math.min(20, Math.max(0.5, Number(v)||0));
+      const r = document.getElementById('calc-engagement-range');
+      const n = document.getElementById('calc-engagement');
+      if (r) r.value = val; if (n) n.value = val;
+    }
+
+    function runCalculation() {
+      const data = {
+        platform: document.getElementById('calc-platform').value,
+        followers: Number(document.getElementById('calc-followers').value),
+        engagement: Number(document.getElementById('calc-engagement').value),
+        contentType: document.getElementById('calc-content').value,
+        niche: document.getElementById('calc-niche').value,
+        usageRights: document.getElementById('calc-usage').value,
+        exclusivity: document.getElementById('calc-exclusivity').value,
+      };
+      const result = calculateRate(data);
+
+      const resEl = document.getElementById('calc-result');
+      resEl.classList.remove('hidden');
+      resEl.classList.add('result-enter');
+
+      const tierColors = { nano:'badge-blue', micro:'badge-green', mid:'badge-purple', macro:'badge-orange', mega:'badge-red' };
+      const tierLabel = result.tier.charAt(0).toUpperCase() + result.tier.slice(1);
+
+      resEl.innerHTML = `
+        <div class="divider"></div>
+        <div class="text-center mb-6">
+          <div class="text-muted text-sm">Estimated Rate</div>
+          <div class="text-5xl font-bold tracking-tight text-primary mt-1">${currency(result.estimatedRate)}</div>
+          <div class="text-muted text-sm mt-1">Range: ${currency(result.rateRange.min)} – ${currency(result.rateRange.max)}</div>
+          <div class="mt-2"><span class="badge ${tierColors[result.tier] || 'badge-blue'}">${tierLabel} Influencer</span></div>
+        </div>
+
+        <div class="border rounded overflow-hidden">
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Base Rate</span>
+            <span class="breakdown-value">${currency(result.breakdown.baseRate)}</span>
+          </div>
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Platform Multiplier</span>
+            <span class="breakdown-value">×${result.breakdown.platformMultiplier.toFixed(2)}</span>
+          </div>
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Engagement Multiplier</span>
+            <span class="breakdown-value">×${result.breakdown.engagementMultiplier.toFixed(2)}</span>
+          </div>
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Content Type Multiplier</span>
+            <span class="breakdown-value">×${result.breakdown.contentTypeMultiplier.toFixed(2)}</span>
+          </div>
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Niche Multiplier</span>
+            <span class="breakdown-value">×${result.breakdown.nicheMultiplier.toFixed(2)}</span>
+          </div>
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Usage Rights Multiplier</span>
+            <span class="breakdown-value">×${result.breakdown.usageRightsMultiplier.toFixed(2)}</span>
+          </div>
+          <div class="breakdown-row px-4">
+            <span class="breakdown-label">Exclusivity Multiplier</span>
+            <span class="breakdown-value">×${result.breakdown.exclusivityMultiplier.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <button class="btn btn-outline btn-full mt-4" onclick="saveCalculation()">Save Calculation</button>
+      `;
+
+      // Store last result temporarily for save
+      window._lastResult = { ...data, ...result, date: new Date().toISOString().split('T')[0] };
+    }
+
+    function saveCalculation() {
+      if (!window._lastResult) return;
+      state.calculations.unshift(window._lastResult);
+      if (state.calculations.length > 50) state.calculations.pop();
+      save(STORAGE_KEYS.calculations, state.calculations);
+      alert('Calculation saved!');
+    }
+
+    function renderDashboard() {
+      const calcs = state.calculations.length ? state.calculations : sampleCalculations;
+      const avg = calcs.length ? Math.round(calcs.reduce((a,c)=>a+c.estimatedRate,0)/calcs.length) : 0;
+      const used = Math.min(100, calcs.length + 12);
+      root.innerHTML = `
+        <div class="max-w-4xl mx-auto">
+          <h1 class="text-3xl font-bold tracking-tight mb-1">Welcome back, ${state.user?.name || 'Demo User'}!</h1>
+          <p class="text-muted">Here's how your rates are trending.</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div class="card p-4">
+              <div class="text-xs text-muted uppercase tracking-wider font-semibold">Calculations Used</div>
+              <div class="text-2xl font-bold mt-1">${used}/100</div>
+              <div class="progress mt-2"><div class="progress-fill" style="width:${used}%"></div></div>
+            </div>
+            <div class="card p-4">
+              <div class="text-xs text-muted uppercase tracking-wider font-semibold">Average Rate</div>
+              <div class="text-2xl font-bold mt-1">${currency(avg)}</div>
+              <div class="text-xs text-muted mt-1">per post</div>
+            </div>
+            <div class="card p-4">
+              <div class="text-xs text-muted uppercase tracking-wider font-semibold">Trend</div>
+              <div class="text-2xl font-bold mt-1 text-green-600">+12%</div>
+              <div class="text-xs text-muted mt-1">vs last month</div>
+            </div>
+            <div class="card p-4">
+              <div class="text-xs text-muted uppercase tracking-wider font-semibold">Tier</div>
+              <div class="mt-1"><span class="badge badge-purple">Pro</span></div>
+              <div class="text-xs text-muted mt-1">plan active</div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mt-8 mb-4">
+            <h2 class="text-lg font-semibold">Recent Calculations</h2>
+            <button class="btn btn-primary btn-sm" onclick="navigate('calculator')">New Calculation</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Platform</th><th>Followers</th><th>Engagement</th><th>Content Type</th><th class="text-right">Estimated Rate</th></tr></thead>
+              <tbody>
+                ${calcs.slice(0,8).map(c => `
+                  <tr>
+                    <td>${formatDate(c.date)}</td>
+                    <td style="text-transform:capitalize">${c.platform}</td>
+                    <td>${formatFollowers(c.followers)}</td>
+                    <td>${c.engagement}%</td>
+                    <td style="text-transform:capitalize">${c.contentType.replace(/-/g,' ')}</td>
+                    <td class="text-right font-semibold">${currency(c.estimatedRate)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLogin() {
+      root.innerHTML = `
+        <div class="max-w-md mx-auto mt-8">
+          <div class="card">
+            <div class="card-header text-center">
+              <div class="inline-flex items-center justify-center w-10 h-10 rounded mb-3" style="background:color-mix(in srgb,var(--primary) 12%,transparent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="card-title">Welcome back</div>
+              <div class="card-description">Sign in to your RateWise account</div>
+            </div>
+            <div class="card-body space-y-4">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Email</label>
+                <input type="email" class="input" id="login-email" placeholder="you@example.com" value="">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Password</label>
+                <input type="password" class="input" id="login-password" placeholder="••••••••" value="">
+              </div>
+              <button class="btn btn-primary btn-full" onclick="handleLogin()">Sign In</button>
+              <div class="divider" style="margin:.75rem 0"></div>
+              <button class="btn btn-outline btn-full" onclick="fillDemo()">Use Demo Account</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      if (!email || !pass) { alert('Please enter email and password.'); return; }
+      state.user = { email, name: email.split('@')[0].replace(/\b\w/g,l=>l.toUpperCase()), plan: 'Pro' };
+      save(STORAGE_KEYS.user, state.user);
+      navigate('dashboard');
+    }
+    function fillDemo() {
+      document.getElementById('login-email').value = 'demo@ratewise.app';
+      document.getElementById('login-password').value = 'demo123';
+      loginDemo();
+    }
+
+    function renderSettings() {
+      root.innerHTML = `
+        <div class="max-w-2xl mx-auto">
+          <h1 class="text-3xl font-bold tracking-tight mb-6">Settings</h1>
+
+          <div class="card mb-6">
+            <div class="card-header"><div class="card-title">Appearance</div><div class="card-description">Customize how RateWise looks</div></div>
+            <div class="card-body">
+              <label class="form-label">Theme</label>
+              <div class="grid grid-cols-3 gap-3 mt-2">
+                <button class="btn btn-outline ${state.theme==='light'?'active':''}" onclick="setTheme('light')" id="btn-theme-light">Light</button>
+                <button class="btn btn-outline ${state.theme==='dark'?'active':''}" onclick="setTheme('dark')" id="btn-theme-dark">Dark</button>
+                <button class="btn btn-outline ${state.theme==='auto'?'active':''}" onclick="setTheme('auto')" id="btn-theme-auto">Auto</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-6">
+            <div class="card-header"><div class="card-title">Profile</div><div class="card-description">Your account information</div></div>
+            <div class="card-body space-y-3">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Name</label>
+                  <input class="input" value="${state.user?.name || 'Demo User'}" readonly />
+                </div>
+                <div>
+                  <label class="form-label">Email</label>
+                  <input class="input" value="${state.user?.email || 'demo@ratewise.app'}" readonly />
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Plan</label>
+                <div class="mt-1"><span class="badge badge-purple">${state.user?.plan || 'Pro'}</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-6">
+            <div class="card-header"><div class="card-title">Notifications</div><div class="card-description">Manage your notification preferences</div></div>
+            <div class="card-body space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-sm">Rate Alerts</div>
+                  <div class="text-xs text-muted">Get notified when your estimated rate changes</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" ${state.settings.notifications?'checked':''} onchange="toggleSetting('notifications',this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-sm">Marketing Emails</div>
+                  <div class="text-xs text-muted">Tips, product updates, and offers</div>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" ${state.settings.marketing?'checked':''} onchange="toggleSetting('marketing',this.checked)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          ${state.user ? `<button class="btn btn-outline btn-full" style="border-color:var(--destructive);color:var(--destructive)" onclick="logout()">Sign Out</button>` : ''}
+        </div>
+      `;
+    }
+
+    function setTheme(t) {
+      state.theme = t; save(STORAGE_KEYS.theme, t); applyTheme(t); renderSettings();
+    }
+    function toggleSetting(key, val) {
+      state.settings[key] = val; save(STORAGE_KEYS.settings, state.settings);
+    }
+
+    function renderUpgrade() {
+      const isPro = (state.user?.plan || 'Pro') === 'Pro';
+      root.innerHTML = `
+        <div class="max-w-4xl mx-auto">
+          <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold tracking-tight">Choose Your Plan</h1>
+            <p class="text-muted mt-1">Unlock advanced features and unlimited calculations</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="pricing-card">
+              <div class="text-sm text-muted font-medium">Free</div>
+              <div class="text-4xl font-bold mt-1">$0<span class="text-sm text-muted font-normal">/mo</span></div>
+              <p class="text-sm text-muted mt-2">Perfect for trying things out.</p>
+              <ul class="space-y-2 mt-4 text-sm">
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5 calculations / month</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Basic breakdown</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Email support</li>
+                <li class="flex items-center gap-2 text-muted"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Export reports</li>
+              </ul>
+              <button class="btn btn-outline btn-full mt-6">Get Started</button>
+            </div>
+
+            <div class="pricing-card featured">
+              <div class="pricing-featured-label">Most Popular</div>
+              <div class="text-sm text-primary font-medium">Pro</div>
+              <div class="text-4xl font-bold mt-1">$29<span class="text-sm text-muted font-normal">/mo</span></div>
+              <p class="text-sm text-muted mt-2">For serious creators and agencies.</p>
+              <ul class="space-y-2 mt-4 text-sm">
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Unlimited calculations</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Detailed breakdown</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Priority support</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Export PDF reports</li>
+              </ul>
+              <button class="btn btn-primary btn-full mt-6">${isPro?'Current Plan':'Upgrade to Pro'}</button>
+              ${isPro?'<div class="text-center mt-2"><span class="badge badge-blue">Current Plan: Pro</span></div>':''}
+            </div>
+
+            <div class="pricing-card">
+              <div class="text-sm text-muted font-medium">Enterprise</div>
+              <div class="text-4xl font-bold mt-1">$99<span class="text-sm text-muted font-normal">/mo</span></div>
+              <p class="text-sm text-muted mt-2">For teams and talent management.</p>
+              <ul class="space-y-2 mt-4 text-sm">
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Everything in Pro</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Team collaboration</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>API access</li>
+                <li class="flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Dedicated account manager</li>
+              </ul>
+              <button class="btn btn-outline btn-full mt-6">Contact Sales</button>
+            </div>
+          </div>
+
+          <div class="mt-8">
+            <h3 class="text-lg font-semibold mb-3">Feature Comparison</h3>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Feature</th><th>Free</th><th>Pro</th><th>Enterprise</th></tr></thead>
+                <tbody>
+                  <tr><td>Calculations</td><td>5 / month</td><td>Unlimited</td><td>Unlimited</td></tr>
+                  <tr><td>Rate Breakdown</td><td>Basic</td><td>Detailed</td><td>Detailed + Export</td></tr>
+                  <tr><td>Support</td><td>Email</td><td>Priority</td><td>Dedicated Manager</td></tr>
+                  <tr><td>Team Seats</td><td>—</td><td>—</td><td>Unlimited</td></tr>
+                  <tr><td>API Access</td><td>—</td><td>—</td><td>Included</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* =========================
+       INIT
+       ========================= */
+    const hash = location.hash.replace('#/','').replace('#','') || 'calculator';
+    navigate(hash, false);
+  </script>
+</body>
+</html>

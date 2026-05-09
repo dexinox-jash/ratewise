@@ -3,658 +3,472 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ratewise — Portfolio Preview</title>
+<title>RateWise — AI-Powered Freelance Rate Calculator</title>
+<meta name="description" content="AI-powered rate calculator for content creators. Platform-aware, engagement-adjusted, market-informed.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ground: #f8fafc;
-    --ground-elevated: #ffffff;
-    --text: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --accent: #0284C7;
-    --accent-light: #e0f2fe;
-    --accent-dark: #0369a1;
-    --border: #e2e8f0;
-    --radius: 12px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
-    --shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.1), 0 12px 24px rgba(0,0,0,0.08);
-    --font-sans: 'Inter', system-ui, sans-serif;
-    --font-display: 'Playfair Display', Georgia, serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: var(--font-sans);
-    background: var(--ground);
-    color: var(--text);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  .container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
-  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-  section { padding: 64px 0; }
-  section + section { border-top: 1px solid var(--border); }
-  .tag {
-    display: inline-block; font-size: 0.7rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--accent); background: var(--accent-light);
-    padding: 4px 10px; border-radius: 999px; margin-bottom: 16px;
-  }
-  h1, h2, h3 {
-    font-family: var(--font-display);
-    font-weight: 700; letter-spacing: -0.02em; line-height: 1.2;
-  }
-  h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); }
-  h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); margin-bottom: 20px; }
-  h3 { font-size: 1.15rem; margin-bottom: 10px; font-family: var(--font-sans); font-weight: 600; }
-  p { color: var(--text-secondary); max-width: 64ch; }
-  p + p { margin-top: 14px; }
-  .lead { font-size: 1.15rem; line-height: 1.65; color: var(--text-secondary); }
+:root{--bg:#ffffff;--text:#0f172a;--muted:#64748b;--primary:#3b82f6;--primary-dark:#2563eb;--primary-light:#eff6ff;--border:#e2e8f0;--surface:#f8fafc;--radius:12px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-lg:0 10px 40px rgba(15,23,42,.08);--shadow-xl:0 20px 60px rgba(15,23,42,.1);--max:1120px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration:none}
+img{max-width:100%;display:block}
+.container{width:92%;max-width:var(--max);margin:0 auto}
+.section{padding:80px 0}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s cubic-bezier(.4,0,.2,1),transform .65s cubic-bezier(.4,0,.2,1)}
+.reveal.active{opacity:1;transform:none}
+.reveal-delay-1{transition-delay:.08s}
+.reveal-delay-2{transition-delay:.16s}
+.reveal-delay-3{transition-delay:.24s}
+.reveal-delay-4{transition-delay:.32s}
+.reveal-delay-5{transition-delay:.4s}
 
-  /* Hero */
-  .hero { padding: 80px 0 56px; }
-  .hero__accent {
-    width: 64px; height: 4px; background: var(--accent); border-radius: 2px; margin-bottom: 28px;
-  }
-  .hero__meta {
-    display: flex; gap: 20px; flex-wrap: wrap; margin-top: 28px;
-    font-size: 0.85rem; color: var(--text-muted);
-  }
-  .hero__meta span { display: flex; align-items: center; gap: 6px; }
-  .hero__reframe {
-    margin-top: 36px; padding: 24px; background: var(--ground-elevated);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-  .hero__reframe-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px;
-  }
-  .hero__reframe-item {
-    padding: 16px; background: var(--ground); border-radius: 8px; border-left: 3px solid var(--accent);
-  }
-  .hero__reframe-item strong { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 6px; }
-  .hero__reframe-item span { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.45; }
+/* Nav */
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;color:var(--text);letter-spacing:-.02em}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--primary),#60a5fa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px}
+.nav-links{display:none;gap:28px;align-items:center;font-size:.92rem;font-weight:500}
+.nav-links a{color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 22px;border-radius:var(--radius-sm);font-size:.92rem;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 2px rgba(59,130,246,.25)}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.3)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--muted);background:var(--surface)}
+.btn-lg{padding:14px 28px;font-size:1rem;border-radius:var(--radius)}
 
-  /* Problem/Solution */
-  .ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 24px; }
-  @media (max-width: 720px) { .ps-grid { grid-template-columns: 1fr; } }
-  .ps-card {
-    background: var(--ground-elevated); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow);
-  }
-  .ps-card h3 { color: var(--accent-dark); }
-  .ps-card ul { margin-top: 14px; padding-left: 18px; }
-  .ps-card li { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 8px; }
-  .quote-box {
-    margin-top: 18px; padding: 14px 16px; background: var(--ground);
-    border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; font-size: 0.85rem;
-    color: var(--text-secondary); font-style: italic;
-  }
-  .quote-box cite { display: block; margin-top: 6px; font-size: 0.75rem; color: var(--text-muted); font-style: normal; }
+/* Hero */
+.hero{padding:64px 0 48px;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:48px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:var(--primary-light);color:var(--primary);border-radius:999px;font-size:.8rem;font-weight:600;margin-bottom:20px;border:1px solid #dbeafe}
+.hero-badge span{display:inline-block;width:6px;height:6px;background:var(--primary);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:2.6rem;font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:18px}
+.hero h1 span{color:var(--primary)}
+.hero p{font-size:1.1rem;color:var(--muted);max-width:480px;margin-bottom:32px;line-height:1.65}
+.hero-btns{display:flex;flex-wrap:wrap;gap:12px}
 
-  /* Architecture */
-  .arch-diagram {
-    background: var(--ground-elevated); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 32px; margin-top: 24px; box-shadow: var(--shadow);
-  }
-  .arch-layer {
-    display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px;
-    background: var(--ground); border-radius: 10px; margin-bottom: 12px;
-    border: 1px solid var(--border); transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .arch-layer:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .arch-layer__num {
-    width: 32px; height: 32px; border-radius: 8px; background: var(--accent);
-    color: #fff; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
-  }
-  .arch-layer__content h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
-  .arch-layer__content p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
-  .arch-layer__content .tech { font-size: 0.78rem; color: var(--accent); margin-top: 4px; font-weight: 500; }
-  .arch-arrow { text-align: center; color: var(--accent); font-size: 1.2rem; margin: 4px 0; }
+/* Calculator mockup */
+.calc-mockup{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-xl);overflow:hidden;max-width:480px;margin:0 auto}
+.calc-header{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface)}
+.calc-dot{width:10px;height:10px;border-radius:50%}
+.calc-dot.r{background:#ef4444}.calc-dot.y{background:#f59e0b}.calc-dot.g{background:#22c55e}
+.calc-header span{font-size:.78rem;color:var(--muted);font-weight:500}
+.calc-body{padding:20px}
+.calc-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.calc-field label{display:block;font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.calc-field .input-like{height:38px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;padding:0 12px;display:flex;align-items:center;font-size:.86rem;color:var(--text);box-shadow:inset 0 1px 2px rgba(0,0,0,.03)}
+.calc-field .input-like.muted{color:var(--muted)}
+.calc-slider{height:6px;background:var(--border);border-radius:3px;margin-top:8px;position:relative}
+.calc-slider::after{content:'';position:absolute;left:0;top:0;height:100%;width:62%;background:linear-gradient(90deg,var(--primary),#60a5fa);border-radius:3px}
+.calc-slider::before{content:'';position:absolute;left:62%;top:-4px;width:14px;height:14px;background:#fff;border:2px solid var(--primary);border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.1);transform:translateX(-50%)}
+.calc-result{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:var(--radius-sm);padding:18px;margin-top:8px;color:#fff}
+.calc-result-label{font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.calc-result-value{font-size:1.8rem;font-weight:800;letter-spacing:-.02em}
+.calc-result-sub{font-size:.78rem;color:#94a3b8;margin-top:6px}
 
-  /* Features */
-  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
-  .feature-card {
-    background: var(--ground-elevated); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow);
-  }
-  .feature-card .status {
-    display: inline-block; font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 999px; margin-bottom: 10px;
-  }
-  .status--production { background: #dcfce7; color: #166534; }
-  .status--prototype { background: #fef9c3; color: #854d0e; }
-  .status--planned { background: #f1f5f9; color: #475569; }
-  .feature-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
-  .feature-card p { font-size: 0.85rem; color: var(--text-secondary); }
+/* Badges */
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.badge-tech{padding:5px 12px;border:1px solid var(--border);border-radius:999px;font-size:.76rem;font-weight:600;color:var(--muted);background:var(--surface)}
 
-  /* Metrics */
-  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-top: 24px; }
-  .metric-box {
-    background: var(--ground-elevated); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px; text-align: center; box-shadow: var(--shadow);
-  }
-  .metric-box__value { font-size: 1.6rem; font-weight: 700; color: var(--accent); font-family: var(--font-mono); }
-  .metric-box__label { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .metric-box__ctx { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+/* Section headers */
+.section-label{display:inline-block;padding:5px 14px;background:var(--primary-light);color:var(--primary);border-radius:999px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;border:1px solid #dbeafe}
+.section h2{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin-bottom:12px;line-height:1.2}
+.section-header p{color:var(--muted);font-size:1.05rem;max-width:560px}
+.section-header{text-align:center;margin-bottom:56px}
 
-  /* Code Exhibit */
-  .code-exhibit { margin-top: 24px; }
-  .code-header {
-    background: #0f172a; color: #94a3b8; padding: 10px 18px; border-radius: var(--radius) var(--radius) 0 0;
-    font-size: 0.8rem; font-family: var(--font-mono); display: flex; justify-content: space-between; align-items: center;
-  }
-  .code-block {
-    background: #0f172a; color: #e2e8f0; padding: 20px 24px 24px;
-    border-radius: 0 0 var(--radius) var(--radius); overflow-x: auto; font-family: var(--font-mono);
-    font-size: 0.82rem; line-height: 1.7;
-  }
-  .code-block .k { color: #c084fc; } /* keyword */
-  .code-block .f { color: #60a5fa; } /* function */
-  .code-block .t { color: #38bdf8; } /* type */
-  .code-block .s { color: #a3e635; } /* string */
-  .code-block .n { color: #f472b6; } /* number */
-  .code-block .c { color: #64748b; } /* comment */
-  .code-context {
-    background: var(--ground-elevated); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow);
-  }
-  .code-context p { font-size: 0.9rem; }
+/* Features */
+.features-grid{display:grid;grid-template-columns:1fr;gap:20px}
+.feature-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:all .25s}
+.feature-card:hover{border-color:#cbd5e1;box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.feature-icon{width:44px;height:44px;background:var(--primary-light);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--primary);margin-bottom:16px}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:.88rem;color:var(--muted);line-height:1.55}
 
-  /* Decisions */
-  details { background: var(--ground-elevated); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
-  summary {
-    padding: 18px 22px; cursor: pointer; font-weight: 600; font-size: 0.95rem;
-    list-style: none; display: flex; justify-content: space-between; align-items: center;
-  }
-  summary::after { content: '+'; font-family: var(--font-mono); color: var(--accent); font-size: 1.1rem; }
-  details[open] summary::after { content: '−'; }
-  summary:hover { background: var(--ground); }
-  .decision-body { padding: 0 22px 22px; }
-  .decision-body p { font-size: 0.9rem; }
-  .impact-tag {
-    display: inline-block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-    padding: 3px 10px; border-radius: 999px; margin-top: 12px;
-  }
-  .impact-high { background: #fee2e2; color: #991b1b; }
-  .impact-medium { background: #fef3c7; color: #92400e; }
-  .impact-low { background: #e0f2fe; color: #075985; }
+/* Calculator breakdown */
+.breakdown-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px}
+.breakdown-formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.95rem;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px 24px;overflow-x:auto;line-height:1.8;color:var(--text)}
+.breakdown-formula .op{color:var(--primary);font-weight:700}
+.breakdown-formula .val{color:#059669;font-weight:600}
+.breakdown-formula .eq{color:var(--muted)}
+.breakdown-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:24px}
+.breakdown-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem}
+.breakdown-item strong{font-weight:600;color:var(--text)}
+.breakdown-item span{color:var(--muted)}
 
-  /* Timeline */
-  .timeline { position: relative; margin-top: 24px; padding-left: 28px; }
-  .timeline::before {
-    content: ''; position: absolute; left: 8px; top: 6px; bottom: 6px;
-    width: 2px; background: var(--border);
-  }
-  .timeline-item { position: relative; margin-bottom: 24px; }
-  .timeline-item::before {
-    content: ''; position: absolute; left: -24px; top: 6px;
-    width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ground);
-  }
-  .timeline-item.future::before { background: var(--text-muted); }
-  .timeline-item h4 { font-size: 0.95rem; font-weight: 600; }
-  .timeline-item .tl-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
-  .timeline-item p { font-size: 0.88rem; }
+/* Tiers */
+.tiers-grid{display:grid;grid-template-columns:1fr;gap:16px}
+.tier-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;transition:all .25s;position:relative;overflow:hidden}
+.tier-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px);border-color:#cbd5e1}
+.tier-card.featured{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.tier-badge{position:absolute;top:0;right:0;background:var(--primary);color:#fff;font-size:.65rem;font-weight:700;padding:5px 12px;border-bottom-left-radius:var(--radius-sm);text-transform:uppercase;letter-spacing:.04em}
+.tier-icon{width:52px;height:52px;background:var(--primary-light);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--primary);margin:0 auto 16px}
+.tier-name{font-size:1.1rem;font-weight:800;margin-bottom:4px}
+.tier-range{font-size:.85rem;color:var(--muted);margin-bottom:16px}
+.tier-rate{font-size:1.6rem;font-weight:800;color:var(--primary);letter-spacing:-.02em}
+.tier-rate-label{font-size:.78rem;color:var(--muted);margin-bottom:16px}
+.tier-note{font-size:.82rem;color:var(--muted);padding-top:16px;border-top:1px solid var(--border)}
 
-  /* Footer */
-  footer { background: var(--ground-elevated); border-top: 1px solid var(--border); padding: 40px 0; margin-top: 40px; }
-  .footer__tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .footer__tag {
-    font-size: 0.75rem; color: var(--text-secondary); background: var(--ground);
-    border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px;
-  }
-  .footer__note { font-size: 0.8rem; color: var(--text-muted); margin-top: 18px; max-width: 60ch; }
+/* Stats bar */
+.stats-bar{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:40px 0;border-radius:0}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;text-align:center}
+.stats-item .num{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.stats-item .label{font-size:.85rem;color:#94a3b8}
+
+/* Steps */
+.steps-grid{display:grid;grid-template-columns:1fr;gap:32px}
+.step-card{text-align:center}
+.step-num{width:56px;height:56px;background:var(--primary-light);color:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;margin:0 auto 18px;border:2px solid #dbeafe}
+.step-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.step-card p{font-size:.9rem;color:var(--muted);max-width:280px;margin:0 auto;line-height:1.55}
+
+/* CTA */
+.cta-section{background:var(--primary-light);border-top:1px solid #dbeafe;border-bottom:1px solid #dbeafe;text-align:center}
+.cta-section h2{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+.cta-section p{color:var(--muted);margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto}
+
+/* Footer */
+.footer{padding:40px 0 32px;border-top:1px solid var(--border);font-size:.85rem;color:var(--muted)}
+.footer-grid{display:grid;grid-template-columns:1fr;gap:24px;margin-bottom:32px}
+.footer-brand .logo{color:var(--text);margin-bottom:8px}
+.footer-brand p{max-width:280px;line-height:1.55}
+.footer-col h4{font-size:.82rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.footer-col a{display:block;color:var(--muted);margin-bottom:8px;transition:color .2s}
+.footer-col a:hover{color:var(--primary)}
+.footer-bottom{display:flex;flex-direction:column;gap:8px;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--border);font-size:.78rem}
+
+@media(min-width:640px){
+.hero h1{font-size:3.2rem}
+.features-grid{grid-template-columns:repeat(2,1fr)}
+.stats-grid{grid-template-columns:repeat(5,1fr)}
+.tiers-grid{grid-template-columns:repeat(2,1fr)}
+.breakdown-grid{grid-template-columns:repeat(2,1fr)}
+.footer-grid{grid-template-columns:2fr 1fr 1fr 1fr}
+}
+@media(min-width:900px){
+.nav-links{display:flex}
+.hero-grid{grid-template-columns:1.05fr .95fr;gap:64px}
+.hero{padding:80px 0 64px}
+.features-grid{grid-template-columns:repeat(3,1fr)}
+.tiers-grid{grid-template-columns:repeat(5,1fr)}
+.steps-grid{grid-template-columns:repeat(3,1fr)}
+.breakdown-grid{grid-template-columns:repeat(4,1fr)}
+.section{padding:100px 0}
+.calc-mockup{margin:0}
+}
 </style>
 </head>
 <body>
 
-<!-- HERO -->
-<section class="hero reveal">
-  <div class="container">
-    <div class="hero__accent"></div>
-    <div class="tag">Project #8 of 9</div>
-    <h1>Ratewise</h1>
-    <p class="lead" style="margin-top:16px;max-width:56ch;">AI-powered rate intelligence for the creator economy</p>
-    <p style="margin-top:18px;max-width:64ch;">Most creator pricing tools are either opaque black boxes or static spreadsheets that cannot adapt to platform, engagement, or geography. Ratewise builds pricing from first principles with 12 visible multipliers. The result is a defensible price range both creators and brands can trust.</p>
-    <div class="hero__meta">
-      <span>⚡ Next.js 14 + TypeScript</span>
-      <span>🗄️ Supabase PostgreSQL</span>
-      <span>💳 Stripe Subscriptions</span>
-      <span>🤖 OpenAI GPT-4o-mini</span>
-      <span>📐 12-factor pricing engine</span>
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">RW</div>
+      RateWise
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#tiers">Tiers</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="./simulator/" class="btn btn-primary">Try Rate Calculator</a>
     </div>
-    <div class="hero__reframe">
-      <strong style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);">Thinking-First Reframe</strong>
-      <div class="hero__reframe-grid">
-        <div class="hero__reframe-item"><strong>Signal</strong><span>Creator economy pricing is arbitrary—same follower count, 10x price swings</span></div>
-        <div class="hero__reframe-item"><strong>Filter</strong><span>Deterministic multi-factor algorithm with explainable multipliers, not black-box AI</span></div>
-        <div class="hero__reframe-item"><strong>Payoff</strong><span>Every price comes with a transparent breakdown: engagement boosted 30%, video content premium 20%</span></div>
-      </div>
-    </div>
+    <a href="./simulator/" class="btn btn-primary" style="display:flex" id="mobile-cta">Try It</a>
   </div>
-</section>
+</nav>
 
-<!-- THE BET -->
-<section class="reveal">
-  <div class="container">
-    <div class="tag">The Bet</div>
-    <h2>Transparent pricing builds more trust than "AI-powered" opacity</h2>
-    <p class="lead">Thesis: creators and brands will prefer auditable math over black-box recommendations when money is on the line.</p>
-    <p><strong>Conviction:</strong> High. Financial decisions require defendable logic. A creator who can explain their rate is more likely to close a deal.</p>
-    <p><strong>Risk if wrong:</strong> Users may prefer the simplicity of a single ChatGPT number over a detailed multiplier breakdown.</p>
-    <p><strong>Hedge:</strong> OpenAI GPT-4o-mini is available as a narrative layer for Pro users—chat-style advice on top of deterministic math.</p>
-  </div>
-</section>
-
-<!-- PROBLEM / SOLUTION -->
-<section class="reveal">
-  <div class="container">
-    <div class="tag">Problem & Solution</div>
-    <h2>From gut feeling to grounded math</h2>
-    <div class="ps-grid">
-      <div class="ps-card">
-        <h3>Problem</h3>
-        <ul>
-          <li>Same 100k Instagram creator quoted $500 by one brand and $5,000 by another</li>
-          <li>No standard methodology—rates are pulled from thin air or copied from competitors</li>
-          <li>Black-box AI tools generate numbers without showing their work</li>
-          <li>Static rate cards cannot adjust for engagement spikes, platform shifts, or campaign complexity</li>
-        </ul>
-        <div class="quote-box">
-          "RateWise is a comprehensive platform designed to help freelancers and agencies determine optimal pricing for their services. By combining AI-powered analysis with real-time market data scraping"
-          <cite>— README.md</cite>
-        </div>
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="reveal">
+      <div class="hero-badge"><span></span> Now with OpenAI-powered insights</div>
+      <h1>Know Your Worth. <span>Price With Confidence.</span></h1>
+      <p>AI-powered rate calculator for content creators. Platform-aware, engagement-adjusted, market-informed.</p>
+      <div class="hero-btns">
+        <a href="./simulator/" class="btn btn-primary btn-lg">Try Rate Calculator</a>
+        <a href="https://github.com/ratewise/ratewise" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+          View on GitHub
+        </a>
       </div>
-      <div class="ps-card">
-        <h3>Solution</h3>
-        <ul>
-          <li>Base rate anchored to follower tier (nano $100 to mega $25,000)</li>
-          <li>Engagement multiplier: 0.7x to 1.5x based on rate vs tier benchmark</li>
-          <li>Content-type multiplier: tweet 0.4x to live 1.5x</li>
-          <li>Deliverable volume discounts: 5+ items 0.9x, 10+ items 0.85x, 20+ bulk 0.9x</li>
-          <li>Industry, geography, duration, usage rights, exclusivity, rush, revision, and platform adjustments</li>
-          <li>AI explanation layer narrates the math for Pro users</li>
-        </ul>
-        <div class="quote-box">
-          calculatePrice composes basePrice × engagementMultiplier × contentTypeMultiplier × deliverableMultiplier × industryMultiplier × geographyMultiplier × durationMultiplier × usageRightsMultiplier × exclusivityMultiplier × rushMultiplier × revisionMultiplier × platformAdjustment
-          <cite>— pricing-calculator.ts L374-476</cite>
-        </div>
+      <div class="badge-row">
+        <span class="badge-tech">Next.js 14</span>
+        <span class="badge-tech">TypeScript</span>
+        <span class="badge-tech">Tailwind CSS</span>
+        <span class="badge-tech">Supabase</span>
+        <span class="badge-tech">OpenAI</span>
+        <span class="badge-tech">Stripe</span>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ARCHITECTURE -->
-<section class="reveal">
-  <div class="container">
-    <div class="tag">Architecture</div>
-    <h2>Four layers, end-to-end type safety</h2>
-    <p>Next.js 14 App Router with API routes, Zod validation at every boundary, and Supabase RLS enforcing row-level security.</p>
-    <div class="arch-diagram">
-      <div class="arch-layer">
-        <div class="arch-layer__num">1</div>
-        <div class="arch-layer__content">
-          <h4>Presentation</h4>
-          <p>Marketing pages, calculator UI, dashboard, rate card preview, pricing page</p>
-          <div class="tech">Next.js 14 App Router · React 18 · Tailwind CSS · shadcn/ui · Framer Motion · Recharts</div>
+    <div class="reveal reveal-delay-2">
+      <div class="calc-mockup">
+        <div class="calc-header">
+          <div class="calc-dot r"></div>
+          <div class="calc-dot y"></div>
+          <div class="calc-dot g"></div>
+          <span>Rate Calculator</span>
         </div>
-      </div>
-      <div class="arch-arrow">↓</div>
-      <div class="arch-layer">
-        <div class="arch-layer__num">2</div>
-        <div class="arch-layer__content">
-          <h4>Application</h4>
-          <p>Rate calculation endpoint, Stripe webhooks, rate card CRUD, auth callbacks, quota enforcement</p>
-          <div class="tech">Next.js API Routes · Zod · React Hook Form · Sonner toast</div>
-        </div>
-      </div>
-      <div class="arch-arrow">↓</div>
-      <div class="arch-layer">
-        <div class="arch-layer__num">3</div>
-        <div class="arch-layer__content">
-          <h4>Domain</h4>
-          <p>Deterministic pricing algorithm, AI explanation generation, market data scraping, subscription lifecycle</p>
-          <div class="tech">pricing-calculator.ts · rate-calculator.ts (OpenAI) · market-scraper.ts · stripe/server.ts</div>
-        </div>
-      </div>
-      <div class="arch-arrow">↓</div>
-      <div class="arch-layer">
-        <div class="arch-layer__num">4</div>
-        <div class="arch-layer__content">
-          <h4>Data</h4>
-          <p>User profiles with RLS, calculation history, rate cards, subscription state, webhook events</p>
-          <div class="tech">Supabase PostgreSQL · Supabase Auth · Supabase Storage · Stripe</div>
+        <div class="calc-body">
+          <div class="calc-row">
+            <div class="calc-field">
+              <label>Platform</label>
+              <div class="input-like">Instagram</div>
+            </div>
+            <div class="calc-field">
+              <label>Followers</label>
+              <div class="input-like">42,000</div>
+            </div>
+          </div>
+          <div class="calc-row">
+            <div class="calc-field">
+              <label>Engagement</label>
+              <div class="input-like">4.2%</div>
+              <div class="calc-slider"></div>
+            </div>
+            <div class="calc-field">
+              <label>Niche</label>
+              <div class="input-like">Beauty & Skincare</div>
+            </div>
+          </div>
+          <div class="calc-row">
+            <div class="calc-field">
+              <label>Content Type</label>
+              <div class="input-like">Reel / Video</div>
+            </div>
+            <div class="calc-field">
+              <label>Usage Rights</label>
+              <div class="input-like">3 Months</div>
+            </div>
+          </div>
+          <div class="calc-result">
+            <div class="calc-result-label">Recommended Rate</div>
+            <div class="calc-result-value">$2,847</div>
+            <div class="calc-result-sub">Base $850 × Platform 1.2 × Engagement 1.4 × Niche 1.3</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- STAKEHOLDER VIEWS -->
-<section class="reveal">
+<section class="section stats-bar">
   <div class="container">
-    <div class="tag">Stakeholder Views</div>
-    <h2>Three lenses on the same product</h2>
-    <div class="ps-grid" style="margin-top:20px;">
-      <div class="ps-card">
-        <h3>Creator</h3>
-        <p>"I can generate a professional rate card in minutes, see exactly why my rate is what it is, and share a branded PDF with clients. The free tier gives me 5 calculations per month—enough to test before committing."</p>
+    <div class="stats-grid reveal">
+      <div class="stats-item"><div class="num">5</div><div class="label">Platforms</div></div>
+      <div class="stats-item"><div class="num">10</div><div class="label">Niches</div></div>
+      <div class="stats-item"><div class="num">4</div><div class="label">Usage Models</div></div>
+      <div class="stats-item"><div class="num">4</div><div class="label">Exclusivity Levels</div></div>
+      <div class="stats-item"><div class="num">6</div><div class="label">Content Types</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label">Features</div>
+      <h2>Everything you need to price with confidence</h2>
+      <p>RateWise combines real market data with AI analysis to give you rates that are fair, competitive, and backed by data.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></div>
+        <h3>Smart Rate Calculator</h3>
+        <p>AI-powered rate recommendations based on your platform, follower count, engagement rate, niche, and current market conditions.</p>
       </div>
-      <div class="ps-card">
-        <h3>Brand</h3>
-        <p>"I get transparent pricing with visible multipliers. No more guessing if a creator rate is fair—I can see the engagement premium, content-type premium, and geography adjustment."</p>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></div>
+        <h3>Platform Coverage</h3>
+        <p>Instagram, TikTok, YouTube, Twitter/X, and LinkedIn — each with platform-specific multipliers that reflect real advertiser demand.</p>
       </div>
-      <div class="ps-card" style="grid-column:1 / -1;">
-        <h3>Engineer</h3>
-        <p>"The pricing engine is pure TypeScript with no ML dependencies—easy to audit, modify, and extend. The Zod schemas enforce type safety from API to database. Stripe webhooks handle the full subscription lifecycle."</p>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+        <h3>Live Market Data</h3>
+        <p>Automated scraping from Upwork, Fiverr, and Freelancer.com gives you real-time rate benchmarks from actual job postings.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></div>
+        <h3>AI Analysis</h3>
+        <p>OpenAI-powered insights explain why a rate is recommended and suggest negotiation talking points for brand deals.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></div>
+        <h3>Branded Rate Cards</h3>
+        <p>Generate professional, branded PDF rate cards in seconds. Share with brands and agencies to streamline your pitch process.</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div>
+        <h3>Creator Tiers</h3>
+        <p>From Nano to Mega — rate models tailored to your audience size with realistic benchmarks for every stage of your creator journey.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="reveal">
+<section class="section" id="calculator" style="background:var(--surface)">
   <div class="container">
-    <div class="tag">Features</div>
-    <h2>What ships today</h2>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>Smart Rate Calculator</h4>
-        <p>12-factor deterministic pricing with transparent multiplier breakdown</p>
+    <div class="section-header reveal">
+      <div class="section-label">Calculator</div>
+      <h2>How the math works</h2>
+      <p>Every recommendation starts with a transparent, adjustable formula you can understand and trust.</p>
+    </div>
+    <div class="breakdown-card reveal">
+      <div class="breakdown-formula">
+        <span class="eq">Base Rate</span> <span class="op">×</span> <span class="val">Platform</span> <span class="op">×</span> <span class="val">Engagement</span> <span class="op">×</span> <span class="val">Content</span> <span class="op">×</span> <span class="val">Niche</span> <span class="op">×</span> <span class="val">Usage</span> <span class="op">×</span> <span class="val">Exclusivity</span> <span class="op">=</span> <strong>Final Rate</strong>
       </div>
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>Rate Cards</h4>
-        <p>Branded, shareable rate cards with service grouping, market comparison badges, and PDF export</p>
-      </div>
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>AI Explanation</h4>
-        <p>GPT-4o-mini narrates the pricing breakdown with personalized insights and recommendations</p>
-      </div>
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>Stripe Subscriptions</h4>
-        <p>Free / Pro / Enterprise tiers with checkout, portal, and webhook sync</p>
-      </div>
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>Calculation History</h4>
-        <p>Saved calculations with filtering, sorting, and pagination</p>
-      </div>
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>Multi-Currency</h4>
-        <p>USD, EUR, GBP, CAD, AUD with fixed exchange rates</p>
-      </div>
-      <div class="feature-card">
-        <span class="status status--production">Production</span>
-        <h4>Quota Enforcement</h4>
-        <p>Free tier limited to 5 calculations/month with monthly reset</p>
-      </div>
-      <div class="feature-card">
-        <span class="status status--prototype">Prototype</span>
-        <h4>Market Data Scraping</h4>
-        <p>Puppeteer scaffolding exists but returns mock data; Upwork/Fiverr scraping is TODO</p>
+      <div class="breakdown-grid">
+        <div class="breakdown-item"><strong>Platform</strong><span>Instagram 1.2×, TikTok 1.1×, YouTube 1.4×</span></div>
+        <div class="breakdown-item"><strong>Engagement</strong><span>&lt;1% 0.8×, 1-3% 1.0×, 3-6% 1.3×, 6%+ 1.6×</span></div>
+        <div class="breakdown-item"><strong>Content</strong><span>Story 0.6×, Static 1.0×, Reel 1.3×, Long-form 1.5×</span></div>
+        <div class="breakdown-item"><strong>Exclusivity</strong><span>Non-exclusive 1.0×, Category 1.2×, Full 1.5×</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PERFORMANCE -->
-<section class="reveal">
+<section class="section" id="tiers">
   <div class="container">
-    <div class="tag">Performance & Scale</div>
-    <h2>By the numbers</h2>
-    <div class="metrics-grid">
-      <div class="metric-box">
-        <div class="metric-box__value">105+</div>
-        <div class="metric-box__label">Source files</div>
-        <div class="metric-box__ctx">TypeScript/React in src/</div>
+    <div class="section-header reveal">
+      <div class="section-label">Creator Tiers</div>
+      <h2>Fair rates for every creator size</h2>
+      <p>Benchmarks scale with your audience so you always know where you stand.</p>
+    </div>
+    <div class="tiers-grid">
+      <div class="tier-card reveal">
+        <div class="tier-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="tier-name">Nano</div>
+        <div class="tier-range">&lt;10K followers</div>
+        <div class="tier-rate">$150–400</div>
+        <div class="tier-rate-label">per sponsored post</div>
+        <div class="tier-note">High engagement, tight community. Great for niche brands.</div>
       </div>
-      <div class="metric-box">
-        <div class="metric-box__value">5</div>
-        <div class="metric-box__label">Database tables</div>
-        <div class="metric-box__ctx">With RLS policies</div>
+      <div class="tier-card reveal reveal-delay-1">
+        <div class="tier-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="tier-name">Micro</div>
+        <div class="tier-range">10K – 50K followers</div>
+        <div class="tier-rate">$400–1,200</div>
+        <div class="tier-rate-label">per sponsored post</div>
+        <div class="tier-note">The sweet spot for ROI. Most requested by agencies.</div>
       </div>
-      <div class="metric-box">
-        <div class="metric-box__value">15+</div>
-        <div class="metric-box__label">Zod schemas</div>
-        <div class="metric-box__ctx">End-to-end validation</div>
+      <div class="tier-card reveal reveal-delay-2">
+        <div class="tier-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="tier-name">Mid</div>
+        <div class="tier-range">50K – 100K followers</div>
+        <div class="tier-rate">$1,200–2,500</div>
+        <div class="tier-rate-label">per sponsored post</div>
+        <div class="tier-note">Established presence. Multi-package deals common.</div>
       </div>
-      <div class="metric-box">
-        <div class="metric-box__value">5</div>
-        <div class="metric-box__label">Stripe events</div>
-        <div class="metric-box__ctx">Webhook handlers</div>
+      <div class="tier-card reveal reveal-delay-3">
+        <div class="tier-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="tier-name">Macro</div>
+        <div class="tier-range">100K – 1M followers</div>
+        <div class="tier-rate">$2,500–10,000</div>
+        <div class="tier-rate-label">per sponsored post</div>
+        <div class="tier-note">Brand ambassador and retainer territory.</div>
       </div>
-      <div class="metric-box">
-        <div class="metric-box__value">12</div>
-        <div class="metric-box__label">Pricing multipliers</div>
-        <div class="metric-box__ctx">Deterministic factors</div>
-      </div>
-      <div class="metric-box">
-        <div class="metric-box__value">8</div>
-        <div class="metric-box__label">Platforms</div>
-        <div class="metric-box__ctx">Instagram to Snapchat</div>
-      </div>
-      <div class="metric-box">
-        <div class="metric-box__value">5</div>
-        <div class="metric-box__label">Currencies</div>
-        <div class="metric-box__ctx">USD, EUR, GBP, CAD, AUD</div>
+      <div class="tier-card featured reveal reveal-delay-4">
+        <div class="tier-badge">Top</div>
+        <div class="tier-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></div>
+        <div class="tier-name">Mega</div>
+        <div class="tier-range">1M+ followers</div>
+        <div class="tier-rate">$10,000+</div>
+        <div class="tier-rate-label">per sponsored post</div>
+        <div class="tier-note">Campaign-level pricing. Custom quotes standard.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- CODE EXHIBIT -->
-<section class="reveal">
+<section class="section" id="how-it-works" style="background:var(--surface)">
   <div class="container">
-    <div class="tag">Engineering Proof</div>
-    <h2>Deterministic Pricing Engine vs Black-Box AI</h2>
-    <div class="code-context">
-      <p>The project ships both a deterministic algorithm and an OpenAI fallback. The decision to build the algorithm was intentional: <strong>financial decisions require auditable math, not opaque LLM outputs.</strong> The function below composes 12 multipliers into a single transparent price. Every factor is inspectable, testable, and explainable.</p>
+    <div class="section-header reveal">
+      <div class="section-label">How It Works</div>
+      <h2>Get your rate in 30 seconds</h2>
+      <p>No signup required. Just enter your metrics and see what the market says.</p>
     </div>
-    <div class="code-exhibit">
-      <div class="code-header">
-        <span>src/lib/utils/pricing-calculator.ts</span>
-        <span style="font-size:0.75rem;">Lines 374–476</span>
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <div class="step-num">1</div>
+        <h3>Enter your metrics</h3>
+        <p>Select your platform, niche, follower count, engagement rate, and content type.</p>
       </div>
-      <pre class="code-block"><code><span class="k">export function</span> <span class="f">calculatePrice</span>(<span class="t">options</span>: <span class="t">CalculatePriceOptions</span>): <span class="t">PricingBreakdown</span> {
-  <span class="k">const</span> { <span class="t">platform</span>, <span class="t">followers</span>, <span class="t">contentType</span>, <span class="t">deliverables</span>, <span class="t">engagementRate</span>,
-    <span class="t">industry</span>, <span class="t">geography</span>, <span class="t">campaignDuration</span>, <span class="t">usageRights</span>, <span class="t">exclusivity</span>,
-    <span class="t">rushJob</span>, <span class="t">revisions</span>, <span class="t">currency</span> = <span class="s">'USD'</span> } = <span class="t">options</span>;
-
-  <span class="k">const</span> <span class="t">tier</span> = <span class="f">getTier</span>(<span class="t">followers</span>);
-  <span class="k">const</span> <span class="t">basePrice</span> = <span class="t">BASE_RATES</span>[<span class="t">tier</span>];
-
-  <span class="k">const</span> <span class="t">effectiveEngagementRate</span> = <span class="t">engagementRate</span> ?? <span class="f">estimateEngagement</span>(<span class="t">followers</span>);
-  <span class="k">const</span> <span class="t">engagementMultiplier</span> = <span class="f">getEngagementMultiplier</span>(<span class="t">effectiveEngagementRate</span>, <span class="t">followers</span>);
-  <span class="k">const</span> <span class="t">contentTypeMultiplier</span> = <span class="t">CONTENT_TYPE_MULTIPLIERS</span>[<span class="t">contentType</span>] || <span class="n">1.0</span>;
-  <span class="k">const</span> <span class="t">deliverableMultiplier</span> = <span class="f">getDeliverableMultiplier</span>(
-    <span class="t">deliverables</span>.<span class="f">map</span>(<span class="t">d</span> => ({ <span class="t">type</span>: <span class="t">d.type</span>, <span class="t">quantity</span>: <span class="t">d.quantity</span> }))
-  );
-  <span class="k">const</span> <span class="t">industryMultiplier</span>      = <span class="f">getIndustryMultiplier</span>(<span class="t">industry</span>);
-  <span class="k">const</span> <span class="t">geographyMultiplier</span>     = <span class="f">getGeographyMultiplier</span>(<span class="t">geography</span>);
-  <span class="k">const</span> <span class="t">durationMultiplier</span>      = <span class="f">getDurationMultiplier</span>(<span class="t">campaignDuration</span>);
-  <span class="k">const</span> <span class="t">usageRightsMultiplier</span>   = <span class="f">getUsageRightsMultiplier</span>(<span class="t">usageRights</span>);
-  <span class="k">const</span> <span class="t">exclusivityMultiplier</span>   = <span class="f">getExclusivityMultiplier</span>(<span class="t">exclusivity</span>);
-  <span class="k">const</span> <span class="t">rushMultiplier</span>          = <span class="f">getRushMultiplier</span>(<span class="t">rushJob</span>);
-  <span class="k">const</span> <span class="t">revisionMultiplier</span>      = <span class="f">getRevisionMultiplier</span>(<span class="t">revisions</span>);
-  <span class="k">const</span> <span class="t">platformAdjustment</span>      = <span class="t">PLATFORM_MULTIPLIERS</span>[<span class="t">platform</span>] || <span class="n">1.0</span>;
-
-  <span class="k">const</span> <span class="t">subtotal</span> = <span class="t">basePrice</span> *
-    <span class="t">engagementMultiplier</span> * <span class="t">contentTypeMultiplier</span> * <span class="t">deliverableMultiplier</span> *
-    <span class="t">industryMultiplier</span> * <span class="t">geographyMultiplier</span> * <span class="t">durationMultiplier</span> *
-    <span class="t">usageRightsMultiplier</span> * <span class="t">exclusivityMultiplier</span> * <span class="t">rushMultiplier</span> *
-    <span class="t">revisionMultiplier</span> * <span class="t">platformAdjustment</span>;
-
-  <span class="k">const</span> <span class="t">finalPrice</span> = <span class="t">Math</span>.<span class="f">round</span>(<span class="t">subtotal</span> / <span class="n">10</span>) * <span class="n">10</span>;
-  <span class="k">const</span> <span class="t">priceRange</span> = {
-    <span class="t">min</span>: <span class="t">Math</span>.<span class="f">round</span>(<span class="t">finalPrice</span> * <span class="n">0.85</span> / <span class="n">10</span>) * <span class="n">10</span>,
-    <span class="t">max</span>: <span class="t">Math</span>.<span class="f">round</span>(<span class="t">finalPrice</span> * <span class="n">1.15</span> / <span class="n">10</span>) * <span class="n">10</span>,
-  };
-
-  <span class="k">return</span> { <span class="t">basePrice</span>, <span class="t">engagementMultiplier</span>, <span class="t">contentTypeMultiplier</span>,
-    <span class="t">deliverableMultiplier</span>, <span class="t">industryMultiplier</span>, <span class="t">geographyMultiplier</span>,
-    <span class="t">durationMultiplier</span>, <span class="t">usageRightsMultiplier</span>, <span class="t">exclusivityMultiplier</span>,
-    <span class="t">rushMultiplier</span>, <span class="t">revisionMultiplier</span>, <span class="t">platformAdjustment</span>, <span class="t">subtotal</span>,
-    <span class="t">finalPrice</span>, <span class="t">priceRange</span>, <span class="t">currency</span>, <span class="t">tier</span>,
-    <span class="t">estimatedEngagement</span>: <span class="t">effectiveEngagementRate</span> };
-}</code></pre>
-    </div>
-  </div>
-</section>
-
-<!-- DECISIONS -->
-<section class="reveal">
-  <div class="container">
-    <div class="tag">Strategic Decisions</div>
-    <h2>Five decisions that shaped the build</h2>
-
-    <details>
-      <summary>Why a deterministic algorithm instead of just using OpenAI?</summary>
-      <div class="decision-body">
-        <p>Financial decisions require auditable math. The deterministic engine shows exactly how each factor contributes to the final price. OpenAI is used only for narrative explanation—never for the actual calculation. This creates trust: creators can defend their rates, and brands can verify fairness.</p>
-        <span class="impact-tag impact-high">High Impact</span>
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-num">2</div>
+        <h3>Get AI-adjusted rate</h3>
+        <p>RateWise calculates a market-informed recommendation with full transparency.</p>
       </div>
-    </details>
-
-    <details>
-      <summary>Why influencer pricing instead of freelance developer pricing?</summary>
-      <div class="decision-body">
-        <p>The README positions Ratewise as a freelance rate calculator, but the actual pricing engine and schemas are built for social media creators (platforms, followers, engagement, content types). The OpenAI layer handles freelance rates as a secondary use case. The creator economy has more standardized variables (followers, engagement, platform) making it better suited for algorithmic pricing.</p>
-        <span class="impact-tag impact-high">High Impact</span>
-      </div>
-    </details>
-
-    <details>
-      <summary>Why Supabase Auth over Clerk (which the API route imports)?</summary>
-      <div class="decision-body">
-        <p>The project uses Supabase Auth throughout—middleware, schema, and client. However, app/api/calculate/route.ts imports @clerk/nextjs/server, which is not in package.json. This appears to be leftover code from an earlier auth approach. The working auth flow is Supabase.</p>
-        <span class="impact-tag impact-medium">Medium Impact</span>
-      </div>
-    </details>
-
-    <details>
-      <summary>Why fixed exchange rates instead of a live API?</summary>
-      <div class="decision-body">
-        <p>The currency conversion uses hardcoded rates (USD 1.0, EUR 0.92, GBP 0.79, CAD 1.36, AUD 1.52). For a pricing tool, approximate conversion is acceptable—creators typically quote in their primary currency. A live API would add cost and latency for marginal accuracy gain.</p>
-        <span class="impact-tag impact-low">Low Impact</span>
-      </div>
-    </details>
-
-    <details>
-      <summary>Why watermark free users' rate cards?</summary>
-      <div class="decision-body">
-        <p>The rate card preview component shows a watermark for non-paid users. This is a classic freemium conversion mechanic—users can see the full quality of the output but need to upgrade to remove branding.</p>
-        <span class="impact-tag impact-medium">Medium Impact</span>
-      </div>
-    </details>
-  </div>
-</section>
-
-<!-- TIMELINE -->
-<section class="reveal">
-  <div class="container">
-    <div class="tag">Timeline</div>
-    <h2>From scaffold to monetization</h2>
-    <div class="timeline">
-      <div class="timeline-item">
-        <div class="tl-meta">v0.1.0 — Shipped</div>
-        <h4>Foundation</h4>
-        <p>Next.js 14 scaffold, Supabase schema with RLS, shadcn/ui component library, Tailwind theme with custom ratewise color palette</p>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-meta">v0.2.0 — Shipped</div>
-        <h4>Pricing Engine</h4>
-        <p>12-factor deterministic calculator, Zod validation schemas, currency conversion, rate card generation</p>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-meta">v0.3.0 — Shipped</div>
-        <h4>Monetization</h4>
-        <p>Stripe checkout, customer portal, webhook handlers, subscription tiers (Free/Pro/Enterprise), quota enforcement</p>
-      </div>
-      <div class="timeline-item">
-        <div class="tl-meta">v0.4.0 — Shipped</div>
-        <h4>AI Layer</h4>
-        <p>GPT-4o-mini explanation generation, insights, recommendations, market context narration</p>
-      </div>
-      <div class="timeline-item future">
-        <div class="tl-meta">v0.5.0 — Planned</div>
-        <h4>Market Intelligence</h4>
-        <p>Live scraping from Upwork/Fiverr, historical trend analysis, demand forecasting</p>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-num">3</div>
+        <h3>Export your rate card</h3>
+        <p>Generate a branded PDF rate card ready to share with brands and agencies.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- REFLECTION -->
-<section class="reveal">
-  <div class="container">
-    <div class="tag">Reflection</div>
-    <h2>What worked, what I would change, what I learned</h2>
-    <div class="ps-grid" style="margin-top:20px;">
-      <div class="ps-card">
-        <h3>What worked</h3>
-        <ul>
-          <li>The deterministic pricing engine is the strongest feature—transparent, fast, and entirely client-computable if needed</li>
-          <li>Stripe integration is production-grade with comprehensive webhook handling and subscription state sync</li>
-          <li>Database schema is well-designed with RLS, indexes, triggers, and proper normalization</li>
-          <li>Zod schemas provide end-to-end type safety from API to database</li>
-        </ul>
-      </div>
-      <div class="ps-card">
-        <h3>What I would change</h3>
-        <ul>
-          <li>Fix the frontend/API mismatch: the RateCalculator React component collects freelance data but sends to /api/calculate which expects influencer data</li>
-          <li>Add actual test files—the project has Jest and Playwright dependencies but zero tests</li>
-          <li>Complete the market scraper or remove Puppeteer dependency until it is implemented</li>
-          <li>Remove the @clerk/nextjs import from the calculate API route (dependency not in package.json)</li>
-          <li>Write the documentation files referenced in README</li>
-        </ul>
-      </div>
-      <div class="ps-card" style="grid-column:1 / -1;">
-        <h3>Lessons</h3>
-        <ul>
-          <li>A deterministic algorithm paired with an AI narrator is more trustworthy than AI alone for financial decisions</li>
-          <li>Freemium conversion mechanics (watermarks, calculation quotas) need to be visible early in the user journey</li>
-          <li>README promises should match code reality—claiming Jest tests and live scraping when neither exists damages credibility</li>
-        </ul>
-      </div>
+<section class="section cta-section">
+  <div class="container reveal">
+    <h2>Stop guessing. Start pricing.</h2>
+    <p>Join creators who use data, not gut feelings, to negotiate better brand deals.</p>
+    <div class="hero-btns" style="justify-content:center">
+      <a href="./simulator/" class="btn btn-primary btn-lg">Try Rate Calculator</a>
+      <a href="https://github.com/ratewise/ratewise" target="_blank" rel="noopener" class="btn btn-ghost btn-lg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+        View on GitHub
+      </a>
     </div>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer>
+<footer class="footer">
   <div class="container">
-    <p style="font-size:0.85rem;color:var(--text-muted);">Ratewise · Next.js 14 · TypeScript · Tailwind CSS · shadcn/ui · Supabase · Stripe · OpenAI · Zod · Framer Motion</p>
-    <div class="footer__tags">
-      <span class="footer__tag">Next.js</span>
-      <span class="footer__tag">TypeScript</span>
-      <span class="footer__tag">Tailwind CSS</span>
-      <span class="footer__tag">shadcn/ui</span>
-      <span class="footer__tag">Supabase</span>
-      <span class="footer__tag">Stripe</span>
-      <span class="footer__tag">OpenAI</span>
-      <span class="footer__tag">Zod</span>
-      <span class="footer__tag">Framer Motion</span>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon">RW</div>
+          RateWise
+        </div>
+        <p>AI-powered rate calculator for content creators, influencers, and creative agencies.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="./simulator/">Calculator</a>
+        <a href="#features">Features</a>
+        <a href="#tiers">Creator Tiers</a>
+        <a href="#">Pricing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="#">Documentation</a>
+        <a href="#">API Reference</a>
+        <a href="#">Rate Guide</a>
+        <a href="#">Changelog</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Blog</a>
+        <a href="https://github.com/ratewise/ratewise" target="_blank" rel="noopener">GitHub</a>
+        <a href="#">Contact</a>
+      </div>
     </div>
-    <p class="footer__note">Core application: src/ directory (105+ files). Supabase migrations: 3 SQL files. Third-party skill packs in .skills/ and .claude/ excluded as not part of app. Manifest generated 2026-05-08.</p>
+    <div class="footer-bottom">
+      <span>RateWise v0.1.0 — Open source under MIT License</span>
+      <span>Built with Next.js, Tailwind, Supabase & OpenAI</span>
+    </div>
   </div>
 </footer>
 
 <script>
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+document.addEventListener('DOMContentLoaded',function(){
+  const io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add('active')}})},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+  var mobileCta=document.getElementById('mobile-cta');
+  function checkWidth(){if(window.innerWidth>=900){mobileCta.style.display='none'}else{mobileCta.style.display='flex'}}
+  checkWidth();window.addEventListener('resize',checkWidth);
+});
 </script>
 </body>
 </html>
